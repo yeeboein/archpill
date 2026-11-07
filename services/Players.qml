@@ -20,7 +20,9 @@ Singleton {
     id: root
 
     readonly property var candidates: filterPlayers(Mpris.players.values, Config.ignoredPlayers)
-    readonly property var active: pick(candidates, Config.preferredPlayer, Config.preferPlaying)
+    // A player you picked by hand in the music dropdown (wins until it goes away).
+    property var chosen: null
+    readonly property var active: (chosen && candidates.indexOf(chosen) !== -1) ? chosen : pick(candidates, Config.preferredPlayer, Config.preferPlaying)
     readonly property bool hasPlayer: active !== null
 
     function nameOf(p) {
@@ -61,6 +63,14 @@ Singleton {
         if (pref && !(preferPlaying && playing && !pref.isPlaying))
             return pref;
         return playing || list[0];
+    }
+
+    function choose(p) {
+        chosen = p;
+    }
+
+    function displayName(p) {
+        return p ? (p.identity || p.desktopEntry || "Player") : "";
     }
 
     function togglePlaying() {

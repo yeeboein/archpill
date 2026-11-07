@@ -33,8 +33,17 @@ Singleton {
             sink.audio.muted = !sink.audio.muted;
     }
 
+    // Microphone
+    readonly property var source: Pipewire.defaultAudioSource
+    readonly property bool micReady: !!source && source.ready && !!source.audio
+    readonly property bool micMuted: micReady ? source.audio.muted : false
+    function toggleMic() {
+        if (micReady)
+            source.audio.muted = !source.audio.muted;
+    }
+
     // Pipewire only fills in volume data for nodes that are "tracked".
     PwObjectTracker {
-        objects: root.sink ? [root.sink] : []
+        objects: [root.sink, root.source].filter(o => !!o)
     }
 }

@@ -1,6 +1,12 @@
 {
   "pill": {
-    "modules": ["clock", "media", "volume", "battery"],
+    "modules": [
+      "clock",
+      "media",
+      "volume",
+      "battery",
+      "control"
+    ],
     "height": 38,
     "minWidth": 140,
     "maxWidth": 720,
@@ -14,7 +20,28 @@
     "showDelay": 80,
     "hideDelay": 450,
     "layer": "overlay",
-    "monitor": ""
+    "monitor": "",
+    "clickAction": "control"
+  },
+  "expanded": {
+    "mediaWidth": 400,
+    "controlWidth": 380,
+    "maxHeight": 640,
+    "radius": 26,
+    "closeOnLeave": true,
+    "closeDelay": 700
+  },
+  "controlCenter": {
+    "widgets": [
+      "wifi",
+      "bluetooth",
+      "dnd",
+      "mic",
+      "volume",
+      "brightness",
+      "media",
+      "battery"
+    ]
   },
   "colors": {
     "background": "#111114",
@@ -43,7 +70,8 @@
     "preferPlaying": false,
     "ignoredPlayers": [],
     "showArt": true,
-    "maxTitleWidth": 170
+    "maxTitleWidth": 170,
+    "showControls": false
   },
   "volume": {
     "step": 5,

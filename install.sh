@@ -4,6 +4,7 @@
 #   ./install.sh               install packages, copy files, add autostart
 #   ./install.sh --no-packages only copy files + autostart (use after editing the code)
 #   ./install.sh --no-autostart  don't start ArchPill automatically at login
+#   ./install.sh --reset-config  back up your config.json and start fresh from the defaults
 set -euo pipefail
 
 REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -13,15 +14,17 @@ USER_CONF_DIR="$CONFIG_HOME/archpill"
 AUTOSTART_FILE="$CONFIG_HOME/autostart/archpill.desktop"
 
 # Packages ArchPill needs (most are already on a Plasma install).
-PACKAGES=(quickshell qt6-svg qt6-declarative upower pipewire wireplumber)
+PACKAGES=(quickshell qt6-svg qt6-declarative upower pipewire wireplumber networkmanager bluez brightnessctl)
 
 INSTALL_PACKAGES=1
 AUTOSTART=1
+RESET_CONFIG=0
 for arg in "$@"; do
     case "$arg" in
         --no-packages) INSTALL_PACKAGES=0 ;;
         --no-autostart) AUTOSTART=0 ;;
-        -h|--help) sed -n '2,7p' "$0"; exit 0 ;;
+        --reset-config) RESET_CONFIG=1 ;;
+        -h|--help) sed -n '2,8p' "$0"; exit 0 ;;
         *) echo "Unknown option: $arg"; exit 1 ;;
     esac
 done
@@ -73,9 +76,16 @@ tar -C "$REPO_DIR" \
 
 # ---- 3. user config ------------------------------------------------------------
 mkdir -p "$USER_CONF_DIR"
+if [[ $RESET_CONFIG -eq 1 && -f "$USER_CONF_DIR/config.json" ]]; then
+    backup="$USER_CONF_DIR/config.json.backup-$(date +%Y%m%d-%H%M%S)"
+    mv "$USER_CONF_DIR/config.json" "$backup"
+    say "Old config saved as $backup"
+fi
 if [[ ! -f "$USER_CONF_DIR/config.json" ]]; then
+    # Start empty: everything comes from config.default.json, and only the
+    # settings you change get stored here (so you get new defaults on updates).
     say "Creating your config: $USER_CONF_DIR/config.json"
-    cp "$REPO_DIR/config.default.json" "$USER_CONF_DIR/config.json"
+    echo "{}" > "$USER_CONF_DIR/config.json"
 else
     say "Keeping your existing config: $USER_CONF_DIR/config.json"
 fi

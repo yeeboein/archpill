@@ -43,6 +43,16 @@ ShellRoot {
         function hide(): void {
             PillState.pinned = false;
         }
+        // Open/close the control centre or the music dropdown.
+        function toggleControlCenter(): void {
+            PillState.toggle("control", "");
+        }
+        function toggleMedia(): void {
+            PillState.toggle("media", "");
+        }
+        function close(): void {
+            PillState.close();
+        }
         // Re-read ~/.config/archpill/config.json (normally automatic).
         function reloadConfig(): void {
             Config.reload();

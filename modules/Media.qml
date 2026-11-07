@@ -3,13 +3,15 @@ import qs
 import qs.components
 import qs.services
 
-// Now playing: album art, title, artist, previous / play-pause / next.
-// Which player is shown is decided in services/Players.qml.
+// Now playing: album art, title and artist. Click it for the big music
+// dropdown. The small play/next/back buttons are hidden unless
+// "media.showControls" is true. Which player is shown: services/Players.qml.
 Item {
     id: root
 
     readonly property var player: Players.active
     property bool shown: Players.hasPlayer
+    property string screenName: ""
 
     implicitWidth: row.implicitWidth
     implicitHeight: row.implicitHeight
@@ -48,6 +50,7 @@ Item {
         }
 
         Column {
+            id: titles
             anchors.verticalCenter: parent.verticalCenter
             width: Math.min(Config.maxTitleWidth, Math.max(title.implicitWidth, artist.implicitWidth))
 
@@ -68,6 +71,7 @@ Item {
         }
 
         Row {
+            visible: Config.mediaShowControls
             anchors.verticalCenter: parent.verticalCenter
             spacing: 0
 
@@ -90,5 +94,14 @@ Item {
                 onClicked: Players.next()
             }
         }
+    }
+
+    // Click the song to open the big music dropdown.
+    MouseArea {
+        x: 0
+        width: titles.x + titles.width
+        height: parent.height
+        cursorShape: Qt.PointingHandCursor
+        onClicked: PillState.toggle("media", root.screenName)
     }
 }

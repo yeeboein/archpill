@@ -30,12 +30,18 @@ Only keep the settings you want to change; anything missing falls back to
 { "pill": { "modules": ["media", "clock", "volume", "battery"] } }
 ```
 
-Available modules: `clock`, `media`, `volume`, `battery`.
+Available modules: `clock`, `media`, `volume`, `battery`, `control` (control centre button).
+
+Click the song in the pill for the big music dropdown. Click the sliders
+button (or an empty part of the pill) for the control centre; press the pencil
+there to add, remove and reorder widgets.
 
 ## Commands
 
 ```bash
 qs -c archpill ipc call archpill toggle      # keep the pill open / let it hide
+qs -c archpill ipc call archpill toggleControlCenter
+qs -c archpill ipc call archpill toggleMedia
 qs -c archpill ipc call archpill playPause
 qs -c archpill ipc call archpill next
 qs -c archpill ipc call archpill previous

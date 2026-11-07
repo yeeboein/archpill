@@ -24,7 +24,7 @@ Singleton {
     readonly property var merged: merge(defaults, user)
 
     // ---- Pill ---------------------------------------------------------------
-    readonly property var modules: get("pill.modules", ["clock", "media", "volume", "battery"])
+    readonly property var modules: get("pill.modules", ["clock", "media", "volume", "battery", "control"])
     readonly property int pillHeight: get("pill.height", 38)
     readonly property int pillMinWidth: get("pill.minWidth", 140)
     readonly property int pillMaxWidth: get("pill.maxWidth", 720)
@@ -39,6 +39,16 @@ Singleton {
     readonly property int hideDelay: get("pill.hideDelay", 450)
     readonly property string layer: get("pill.layer", "overlay") // "overlay" or "top"
     readonly property string monitor: get("pill.monitor", "")
+    // What a click on an empty part of the pill opens: "control", "media" or "none".
+    readonly property string clickAction: get("pill.clickAction", "control")
+
+    // ---- Expanded views (music dropdown, control centre) -------------------
+    readonly property int mediaWidth: get("expanded.mediaWidth", 400)
+    readonly property int controlWidth: get("expanded.controlWidth", 380)
+    readonly property int expandedMaxHeight: get("expanded.maxHeight", 640)
+    readonly property int expandedRadius: get("expanded.radius", 26)
+    readonly property bool closeOnLeave: get("expanded.closeOnLeave", true)
+    readonly property int closeDelay: get("expanded.closeDelay", 700)
 
     // ---- Look ---------------------------------------------------------------
     readonly property color background: get("colors.background", "#111114")
@@ -64,6 +74,7 @@ Singleton {
     readonly property bool preferPlaying: get("media.preferPlaying", false)
     readonly property var ignoredPlayers: get("media.ignoredPlayers", [])
     readonly property bool showArt: get("media.showArt", true)
+    readonly property bool mediaShowControls: get("media.showControls", false)
     readonly property int maxTitleWidth: get("media.maxTitleWidth", 170)
 
     readonly property int volumeStep: get("volume.step", 5)
@@ -72,6 +83,8 @@ Singleton {
 
     readonly property bool batteryShowPercent: get("battery.showPercent", true)
     readonly property int batteryLow: get("battery.lowThreshold", 20)
+
+    readonly property var controlWidgets: get("controlCenter.widgets", ["wifi", "bluetooth", "dnd", "mic", "volume", "brightness", "media", "battery"])
 
     // ---- Helpers ------------------------------------------------------------
 
@@ -111,6 +124,22 @@ Singleton {
             console.warn("[archpill] " + label + " is not valid JSON, keeping previous settings: " + e);
             return null;
         }
+    }
+
+    // Change one setting and save it to ~/.config/archpill/config.json.
+    // Only your own changes are stored there; defaults stay in config.default.json.
+    function setValue(path, value) {
+        const u = JSON.parse(JSON.stringify(root.user || {}));
+        const parts = path.split(".");
+        let node = u;
+        for (let i = 0; i < parts.length - 1; i++) {
+            if (typeof node[parts[i]] !== "object" || node[parts[i]] === null || Array.isArray(node[parts[i]]))
+                node[parts[i]] = {};
+            node = node[parts[i]];
+        }
+        node[parts[parts.length - 1]] = value;
+        root.user = u; // update right away, the file watcher confirms it
+        userFile.setText(JSON.stringify(u, null, 2) + "\n");
     }
 
     function reload() {

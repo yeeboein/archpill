@@ -14,11 +14,15 @@ import qs.modules as M
 //    clicks straight through to your windows.
 //  - Touching the strip slides the pill down; the mask then grows to cover the
 //    pill. When the mouse leaves, the pill slides back up after a short delay.
+//
+// The pill can also grow ("expand") into the music dropdown or the control
+// centre. It closes again when the mouse leaves it (see "expanded" config).
 PanelWindow {
     id: win
 
     required property var modelData
     screen: modelData
+    readonly property string screenName: modelData ? modelData.name : ""
 
     anchors.top: true
     exclusionMode: ExclusionMode.Ignore
@@ -29,24 +33,43 @@ PanelWindow {
     WlrLayershell.layer: Config.layer === "top" ? WlrLayer.Top : WlrLayer.Overlay
     WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
 
-    // Big enough for the widest pill; the transparent part costs ~nothing
-    // and is click-through thanks to the mask.
-    implicitWidth: Math.max(Config.pillMaxWidth, Config.triggerWidth) + 16
-    implicitHeight: Config.topMargin + Config.pillHeight + 8
+    // Big enough for the widest/tallest pill; the transparent part costs
+    // almost nothing and is click-through thanks to the mask.
+    implicitWidth: Math.max(Config.pillMaxWidth, Config.triggerWidth, Config.mediaWidth, Config.controlWidth) + 16
+    implicitHeight: Config.topMargin + Math.max(Config.pillHeight, Config.expandedMaxHeight) + 8
+
+    // ---- expanded mode -------------------------------------------------------
+    // Which screen an IPC command (no screen given) opens on.
+    readonly property bool isDefaultScreen: {
+        if (Config.monitor !== "" && Config.monitor === screenName)
+            return true;
+        return Quickshell.screens.length > 0 && Quickshell.screens[0].name === screenName;
+    }
+    readonly property string mode: {
+        if (PillState.expanded === "")
+            return "";
+        const here = PillState.screenName === "" ? isDefaultScreen : PillState.screenName === screenName;
+        return here ? PillState.expanded : "";
+    }
+    readonly property bool expanded: mode !== ""
+    readonly property int expandedPad: 16
 
     // ---- reveal logic -------------------------------------------------------
     readonly property bool hovering: pillHover.hovered || triggerHover.hovered
     property bool revealed: false
-    readonly property bool open: revealed || PillState.pinned
+    readonly property bool open: revealed || PillState.pinned || expanded
 
     onHoveringChanged: {
         if (hovering) {
             hideTimer.stop();
+            closeTimer.stop();
             if (!revealed)
                 showTimer.restart();
         } else {
             showTimer.stop();
             hideTimer.restart();
+            if (expanded && Config.closeOnLeave)
+                closeTimer.restart();
         }
     }
 
@@ -59,6 +82,11 @@ PanelWindow {
         id: hideTimer
         interval: Config.hideDelay
         onTriggered: win.revealed = false
+    }
+    Timer {
+        id: closeTimer
+        interval: Config.closeDelay
+        onTriggered: if (win.expanded && !win.hovering) PillState.close()
     }
 
     mask: Region {
@@ -81,6 +109,8 @@ PanelWindow {
             return volumeModule;
         case "battery":
             return batteryModule;
+        case "control":
+            return controlModule;
         }
         Modules.warnUnknown(name);
         return null;
@@ -92,7 +122,9 @@ PanelWindow {
     }
     Component {
         id: mediaModule
-        M.Media {}
+        M.Media {
+            screenName: win.screenName
+        }
     }
     Component {
         id: volumeModule
@@ -101,6 +133,22 @@ PanelWindow {
     Component {
         id: batteryModule
         M.Battery {}
+    }
+    Component {
+        id: controlModule
+        M.Control {
+            screenName: win.screenName
+        }
+    }
+
+    // Big views the pill can grow into.
+    Component {
+        id: mediaView
+        MediaDropdown {}
+    }
+    Component {
+        id: controlView
+        ControlCenter {}
     }
 
     // ---- idle indicator ("tiny" mode) --------------------------------------
@@ -149,12 +197,14 @@ PanelWindow {
         Rectangle {
             id: pill
 
-            readonly property int contentWidth: modulesRow.implicitWidth + Config.pillPadding * 2
+            readonly property int compactWidth: Math.max(Config.pillMinWidth, Math.min(Config.pillMaxWidth, modulesRow.implicitWidth + Config.pillPadding * 2))
+            readonly property int bigWidth: win.mode === "media" ? Config.mediaWidth : Config.controlWidth
+            readonly property int bigHeight: Math.min(Config.expandedMaxHeight, (bigView.item ? bigView.item.implicitHeight : 0) + win.expandedPad * 2)
 
             anchors.horizontalCenter: parent.horizontalCenter
-            width: Math.max(Config.pillMinWidth, Math.min(Config.pillMaxWidth, contentWidth))
-            height: Config.pillHeight
-            radius: Math.min(Config.pillRadius, height / 2)
+            width: win.expanded ? bigWidth : compactWidth
+            height: win.expanded ? Math.max(Config.pillHeight, bigHeight) : Config.pillHeight
+            radius: win.expanded ? Config.expandedRadius : Math.min(Config.pillRadius, height / 2)
             color: Config.pillColor
             border.width: 1
             border.color: Qt.rgba(1, 1, 1, 0.06)
@@ -166,7 +216,6 @@ PanelWindow {
 
             Behavior on y {
                 NumberAnimation {
-                    id: slide
                     duration: Config.animDuration
                     easing.type: Easing.OutCubic
                 }
@@ -178,11 +227,38 @@ PanelWindow {
                     easing.type: Easing.OutCubic
                 }
             }
+            Behavior on height {
+                NumberAnimation {
+                    duration: Config.animDuration
+                    easing.type: Easing.OutCubic
+                }
+            }
+            Behavior on radius {
+                NumberAnimation {
+                    duration: Config.animDuration
+                }
+            }
 
+            // Click on an empty part of the pill (configurable).
+            MouseArea {
+                anchors.fill: parent
+                enabled: !win.expanded && Config.clickAction !== "none"
+                cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
+                onClicked: PillState.toggle(Config.clickAction === "media" ? "media" : "control", win.screenName)
+            }
+
+            // Normal (compact) contents.
             Row {
                 id: modulesRow
                 anchors.centerIn: parent
                 spacing: Config.pillSpacing
+                opacity: win.expanded ? 0 : 1
+                visible: opacity > 0
+                Behavior on opacity {
+                    NumberAnimation {
+                        duration: Config.animDuration / 2
+                    }
+                }
 
                 Repeater {
                     model: Config.modules
@@ -192,6 +268,33 @@ PanelWindow {
                         anchors.verticalCenter: parent ? parent.verticalCenter : undefined
                         sourceComponent: win.componentFor(modelData)
                         visible: status === Loader.Ready && !!item && item.shown !== false
+                    }
+                }
+            }
+
+            // Expanded contents (only created while open, to save memory).
+            // Scrolls if it is taller than "expanded.maxHeight".
+            Flickable {
+                x: win.expandedPad
+                y: win.expandedPad
+                width: pill.bigWidth - win.expandedPad * 2
+                height: pill.height - win.expandedPad * 2
+                contentHeight: bigView.item ? bigView.item.implicitHeight : 0
+                interactive: contentHeight > height
+                boundsBehavior: Flickable.StopAtBounds
+                clip: interactive
+                visible: bigView.active
+
+                Loader {
+                    id: bigView
+                    width: pill.bigWidth - win.expandedPad * 2
+                    active: win.expanded
+                    sourceComponent: win.mode === "media" ? mediaView : controlView
+                    opacity: win.expanded && pill.height > Config.pillHeight + 20 ? 1 : 0
+                    Behavior on opacity {
+                        NumberAnimation {
+                            duration: Config.animDuration / 2
+                        }
                     }
                 }
             }
