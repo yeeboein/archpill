@@ -44,5 +44,5 @@ Image {
         return "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='" + fill + "' fill-opacity='" + color.a + "' d='" + d + "'/></svg>";
     }
 
-    source: svg ? "data:image/svg+xml;base64," + Qt.btoa(svg) : ""
+    source: svg ? "data:image/svg+xml;utf8," + encodeURIComponent(svg) : ""
 }

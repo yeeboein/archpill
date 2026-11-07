@@ -3,22 +3,12 @@ pragma Singleton
 import QtQuick
 import Quickshell
 
-// The list of modules you can put in the pill (config: "pill.modules").
-// Name in config  ->  file in modules/
+// The modules you can put in the pill (config: "pill.modules").
+// Each one is a file in modules/ and is hooked up in Pill.qml (componentFor).
 Singleton {
-    readonly property var available: ({
-            "clock": "Clock.qml",
-            "media": "Media.qml",
-            "volume": "Volume.qml",
-            "battery": "Battery.qml"
-        })
+    readonly property var available: ["clock", "media", "volume", "battery"]
 
-    function fileFor(name) {
-        const file = available[String(name).toLowerCase()];
-        if (!file) {
-            console.warn("[archpill] unknown module in config: \"" + name + "\" (available: " + Object.keys(available).join(", ") + ")");
-            return "";
-        }
-        return Qt.resolvedUrl("modules/" + file);
+    function warnUnknown(name) {
+        console.warn("[archpill] unknown module in config: \"" + name + "\" (available: " + available.join(", ") + ")");
     }
 }

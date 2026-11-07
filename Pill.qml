@@ -3,6 +3,7 @@ import Quickshell
 import Quickshell.Wayland
 import qs
 import qs.services
+import qs.modules as M
 
 // The pill: one transparent layer-shell window at the top-centre of a screen.
 //
@@ -65,6 +66,41 @@ PanelWindow {
         Region {
             item: win.open ? hitbox : null
         }
+    }
+
+    // ---- modules ------------------------------------------------------------
+    // Name in config ("pill.modules") -> module. Add new modules here
+    // and in Modules.qml.
+    function componentFor(name) {
+        switch (String(name).toLowerCase()) {
+        case "clock":
+            return clockModule;
+        case "media":
+            return mediaModule;
+        case "volume":
+            return volumeModule;
+        case "battery":
+            return batteryModule;
+        }
+        Modules.warnUnknown(name);
+        return null;
+    }
+
+    Component {
+        id: clockModule
+        M.Clock {}
+    }
+    Component {
+        id: mediaModule
+        M.Media {}
+    }
+    Component {
+        id: volumeModule
+        M.Volume {}
+    }
+    Component {
+        id: batteryModule
+        M.Battery {}
     }
 
     // ---- idle indicator ("tiny" mode) --------------------------------------
@@ -154,7 +190,7 @@ PanelWindow {
                     delegate: Loader {
                         required property var modelData
                         anchors.verticalCenter: parent ? parent.verticalCenter : undefined
-                        source: Modules.fileFor(modelData)
+                        sourceComponent: win.componentFor(modelData)
                         visible: status === Loader.Ready && !!item && item.shown !== false
                     }
                 }
