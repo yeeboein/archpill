@@ -1,0 +1,57 @@
+{
+  "pill": {
+    "modules": ["clock", "media", "volume", "battery"],
+    "height": 38,
+    "minWidth": 140,
+    "maxWidth": 720,
+    "radius": 19,
+    "padding": 14,
+    "spacing": 14,
+    "topMargin": 6,
+    "idleMode": "tiny",
+    "triggerWidth": 420,
+    "triggerHeight": 3,
+    "showDelay": 80,
+    "hideDelay": 450,
+    "layer": "overlay",
+    "monitor": ""
+  },
+  "colors": {
+    "background": "#111114",
+    "foreground": "#f2f2f7",
+    "subtle": "#9a9aa5",
+    "accent": "#0a84ff",
+    "good": "#30d158",
+    "warning": "#ff9f0a",
+    "critical": "#ff453a"
+  },
+  "opacity": 0.94,
+  "font": {
+    "family": "",
+    "size": 12
+  },
+  "animation": {
+    "duration": 180
+  },
+  "clock": {
+    "timeFormat": "HH:mm",
+    "dateFormat": "ddd d MMM",
+    "showDate": true
+  },
+  "media": {
+    "preferredPlayer": "spotify",
+    "preferPlaying": false,
+    "ignoredPlayers": [],
+    "showArt": true,
+    "maxTitleWidth": 170
+  },
+  "volume": {
+    "step": 5,
+    "maxVolume": 100,
+    "showPercent": true
+  },
+  "battery": {
+    "showPercent": true,
+    "lowThreshold": 20
+  }
+}
