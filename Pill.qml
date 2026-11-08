@@ -72,8 +72,10 @@ PanelWindow {
         return here ? PillState.expanded : "";
     }
     readonly property bool expanded: mode !== ""
-    // Volume popup (shown on the default screen, not while expanded).
-    readonly property bool osd: PillState.osd !== "" && isDefaultScreen && !expanded
+    // A notification is showing (the pill grows to show it).
+    readonly property bool notif: !!Notifs.current && isDefaultScreen && !expanded
+    // Volume popup (shown on the default screen, not while expanded or showing a notification).
+    readonly property bool osd: PillState.osd !== "" && isDefaultScreen && !expanded && !notif
     // While the music player is open, volume changes appear in a small strip
     // that grows out of its bottom edge instead.
     readonly property bool osdStrip: PillState.osd !== "" && mode === "media"
@@ -83,7 +85,14 @@ PanelWindow {
     // ---- reveal logic -------------------------------------------------------
     readonly property bool hovering: pillHover.hovered || triggerHover.hovered
     property bool revealed: false
-    readonly property bool open: revealed || PillState.pinned || expanded || osd || PillState.settingsOpen || Config.alwaysOpen
+    readonly property bool open: revealed || PillState.pinned || expanded || osd || notif || PillState.settingsOpen || Config.alwaysOpen
+
+    // Keep a notification on screen while the mouse is on it.
+    Binding {
+        target: Notifs
+        property: "paused"
+        value: win.notif && win.hovering
+    }
 
     // Becomes true once the mouse has been on the expanded pill. Until then
     // it doesn't close quickly (the pill changes size when it opens, so the
@@ -219,9 +228,9 @@ PanelWindow {
             readonly property int bigWidth: win.mode === "media" ? Config.mediaWidth : Config.controlWidth
             readonly property int bigHeight: Math.min(Config.expandedMaxHeight, (bigView.item ? bigView.item.implicitHeight : 0) + win.expandedPad * 2)
 
-            width: win.expanded ? bigWidth : win.osd ? Config.osdWidth : compactWidth
-            height: win.expanded ? Math.max(Config.pillHeight, bigHeight) + (win.osdStrip ? win.osdStripHeight : 0) : Config.pillHeight
-            radius: win.expanded ? Config.expandedRadius : Math.min(Config.pillRadius, height / 2)
+            width: win.expanded ? bigWidth : win.notif ? Config.notifWidth : win.osd ? Config.osdWidth : compactWidth
+            height: win.expanded ? Math.max(Config.pillHeight, bigHeight) + (win.osdStrip ? win.osdStripHeight : 0) : win.notif ? Math.max(Config.pillHeight, notifView.implicitHeight + win.expandedPad * 2) : Config.pillHeight
+            radius: win.expanded ? Config.expandedRadius : win.notif ? Math.min(Config.expandedRadius, height / 2) : Math.min(Config.pillRadius, height / 2)
             color: "transparent"
             clip: true
 
@@ -286,7 +295,7 @@ PanelWindow {
             // Click on an empty part of the pill (configurable).
             MouseArea {
                 anchors.fill: parent
-                enabled: !win.expanded && Config.clickAction !== "none"
+                enabled: !win.expanded && !win.notif && Config.clickAction !== "none"
                 cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
                 onClicked: PillState.toggle(Config.clickAction === "media" ? "media" : "control", win.screenName)
             }
@@ -296,8 +305,25 @@ PanelWindow {
                 id: modulesRow
                 anchors.centerIn: parent
                 screenName: win.screenName
-                opacity: win.expanded || win.osd ? 0 : 1
+                opacity: win.expanded || win.osd || win.notif ? 0 : 1
                 visible: opacity > 0
+                Behavior on opacity {
+                    enabled: Config.anim("fade")
+                    NumberAnimation {
+                        duration: Config.animDuration / 2
+                    }
+                }
+            }
+
+            // Notification card.
+            NotificationView {
+                id: notifView
+                x: win.expandedPad
+                y: win.expandedPad
+                width: Config.notifWidth - win.expandedPad * 2
+                opacity: win.notif ? 1 : 0
+                visible: opacity > 0
+                enabled: win.notif
                 Behavior on opacity {
                     enabled: Config.anim("fade")
                     NumberAnimation {

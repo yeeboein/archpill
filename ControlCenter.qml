@@ -96,6 +96,7 @@ Item {
             "power": powerW,
             "archpillsettings": settingsW,
             "update": updateW,
+            "notifications": notificationsW,
             "cpu": cpuW,
             "ram": ramW,
             "gpu": gpuW
@@ -164,6 +165,7 @@ Item {
     Component { id: powerW; W.PowerCard {} }
     Component { id: settingsW; W.SettingsTile {} }
     Component { id: updateW; W.UpdateTile {} }
+    Component { id: notificationsW; W.NotificationsCard {} }
     Component { id: cpuW; W.CpuCard {} }
     Component { id: ramW; W.RamCard {} }
     Component { id: gpuW; W.GpuCard {} }

@@ -98,6 +98,101 @@ Column {
     }
 
     Section {
+        title: "Notifications"
+        note: "Show notifications in the pill: it grows to show the app, title and text, then shrinks back. Click to open, × to dismiss. Missed ones are in the control centre's Notifications widget."
+        Component.onCompleted: Notifs.checkOwner()
+        SettingRow {
+            label: "Handled by: " + Notifs.ownerName + (Notifs.active ? " ✓" : "")
+            description: Notifs.active ? "Notifications appear in the pill." : Desktop.isKde ? "Plasma shows them right now. Switch them to ArchPill (Plasma's panel restarts for a second)." : "Another app (" + Notifs.ownerName + ") shows them. Close it or remove it from autostart, and ArchPill takes over automatically."
+            controlWidth: 240
+            Row {
+                anchors.right: parent.right
+                spacing: 6
+                SmallButton {
+                    visible: Desktop.isKde && !Notifs.active
+                    label: "Use ArchPill"
+                    highlight: true
+                    onClicked: Notifs.handOver()
+                }
+                SmallButton {
+                    visible: Desktop.isKde && Notifs.active
+                    label: "Give back to Plasma"
+                    onClicked: Notifs.giveBack()
+                }
+                SmallButton {
+                    label: "Check"
+                    onClicked: Notifs.checkOwner()
+                }
+            }
+        }
+        PillText {
+            visible: Notifs.handoverStatus !== ""
+            width: parent.width
+            wrapMode: Text.Wrap
+            maximumLineCount: 3
+            text: Notifs.handoverStatus
+            color: Config.accent
+            sizeFactor: 0.9
+        }
+        PillText {
+            visible: Desktop.isKde && !Notifs.active
+            width: parent.width
+            wrapMode: Text.Wrap
+            maximumLineCount: 6
+            color: Config.subtle
+            sizeFactor: 0.85
+            text: "If the button doesn't work, do it by hand: right-click the little arrow in your system tray → Configure System Tray → Entries → Notifications → Disabled, then log out and back in. To undo, set it back to \"Shown when relevant\"."
+        }
+        SettingRow {
+            label: "Show notifications in the pill"
+            Toggle {
+                checked: Config.notifShowInPill
+                onToggled: v => Config.setValue("notifications.showInPill", v)
+            }
+        }
+        SettingRow {
+            label: "How long they stay"
+            description: "Unless the app asks for a time. Urgent ones stay until you close them."
+            NumberSlider {
+                from: 2000
+                to: 15000
+                step: 500
+                suffix: " ms"
+                value: Config.notifDuration
+                onMoved: v => Config.setValue("notifications.duration", v)
+            }
+        }
+        SettingRow {
+            label: "Width"
+            NumberSlider {
+                from: 260
+                to: 640
+                step: 10
+                suffix: " px"
+                value: Config.notifWidth
+                onMoved: v => Config.setValue("notifications.width", v)
+            }
+        }
+        SettingRow {
+            label: "Do Not Disturb"
+            description: "Notifications don't pop up (urgent ones still do); they still go to the history"
+            Toggle {
+                checked: PillState.dnd
+                onToggled: v => PillState.dnd = v
+            }
+        }
+        SettingRow {
+            label: "Send a test notification"
+            controlWidth: 120
+            SmallButton {
+                anchors.right: parent.right
+                label: "Test"
+                onClicked: Quickshell.execDetached(["notify-send", "-a", "ArchPill", "-i", Quickshell.shellPath("assets/logo.png"), "Hello from ArchPill 👋", "This is what notifications look like in the pill."])
+            }
+        }
+    }
+
+    Section {
         title: "Home (Windows) key"
         note: "Press the Windows / Super key on its own to open the pill."
         Component.onCompleted: Desktop.checkSuperKey()

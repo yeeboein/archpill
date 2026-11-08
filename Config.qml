@@ -48,6 +48,12 @@ Singleton {
     readonly property bool alwaysOpen: get("pill.alwaysOpen", false)
     readonly property bool networkShowName: get("network.showName", true)
 
+    // ---- Notifications in the pill -------------------------------------------
+    readonly property bool notifShowInPill: get("notifications.showInPill", true)
+    readonly property int notifDuration: get("notifications.duration", 5000)
+    readonly property int notifWidth: get("notifications.width", 380)
+    readonly property int notifHistory: get("notifications.history", 50)
+
     // ---- Volume popup in the pill ---------------------------------------------
     readonly property bool osdEnabled: get("osd.enabled", true)
     readonly property int osdDuration: get("osd.duration", 1500)
@@ -132,7 +138,7 @@ Singleton {
     readonly property bool batteryShowPercent: get("battery.showPercent", true)
     readonly property int batteryLow: get("battery.lowThreshold", 20)
 
-    readonly property var controlWidgets: get("controlCenter.widgets", ["wifi", "bluetooth", "dnd", "mic", "volume", "brightness", "media", "battery"])
+    readonly property var controlWidgets: get("controlCenter.widgets", ["wifi", "bluetooth", "dnd", "mic", "volume", "brightness", "media", "battery", "notifications"])
     // Your own buttons: [{ "id": "c1", "name": "Reddit", "icon": "web", "command": "xdg-open https://reddit.com" }]
     readonly property var customButtons: get("controlCenter.customButtons", [])
 

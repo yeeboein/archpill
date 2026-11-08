@@ -63,7 +63,8 @@ Singleton {
         { id: "sysinfo", name: "System Info", icon: "info", category: "Info", wide: true, desc: "Computer name, kernel, uptime." },
 
         // Tools
-        { id: "dnd", name: "Do Not Disturb", icon: "moon", category: "Tools", desc: "Silence ArchPill notifications." },
+        { id: "dnd", name: "Do Not Disturb", icon: "moon", category: "Tools", desc: "Stop notifications popping up in the pill (they still go to the history)." },
+        { id: "notifications", name: "Notifications", icon: "bell", category: "Tools", wide: true, desc: "Notification history with Clear all." },
         { id: "caffeine", name: "Stay Awake", icon: "coffee", category: "Tools", desc: "Stop the screen from turning off / the PC from sleeping." },
         { id: "timer", name: "Timer", icon: "timer", category: "Tools", wide: true, desc: "Stopwatch and countdown." },
         { id: "clipboard", name: "Clipboard", icon: "clipboard", category: "Tools", wide: true, desc: "Last copied items from Plasma's clipboard. Click to copy again." },

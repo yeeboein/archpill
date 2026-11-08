@@ -40,7 +40,8 @@
       "volume",
       "brightness",
       "media",
-      "battery"
+      "battery",
+      "notifications"
     ]
   },
   "colors": {

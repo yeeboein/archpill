@@ -26,6 +26,8 @@ ShellRoot {
 
     // Start the update checker (it checks GitHub a minute after login).
     readonly property bool updateAvailable: Updater.available
+    // Start the notification server (takes over notifications when free).
+    readonly property bool notificationsActive: Notifs.active
 
     Variants {
         model: root.pickScreens(Config.monitor)

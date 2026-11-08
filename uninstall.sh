@@ -26,6 +26,19 @@ if [[ -f "$USER_CONF_DIR/.plasma-volume-osd-off" ]]; then
     rm -f "$USER_CONF_DIR/.plasma-volume-osd-off"
 fi
 
+# Give notifications back to Plasma if ArchPill took them over.
+if [[ -f "$USER_CONF_DIR/.plasma-notifications-off" ]]; then
+    say "Giving notifications back to Plasma"
+    script="panels().forEach(function(p) { p.widgets('org.kde.plasma.systemtray').forEach(function(w) { var st = desktopById(w.readConfig('SystrayContainmentId')); if (!st) return; st.currentConfigGroup = ['General']; var items = String(st.readConfig('extraItems', '')).split(',').filter(function(x) { return x && x !== 'org.kde.plasma.notifications'; }); items.push('org.kde.plasma.notifications'); st.writeConfig('extraItems', items); }); });"
+    if dbus-send --session --print-reply --dest=org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell.evaluateScript "string:$script" >/dev/null 2>&1; then
+        rm -f "$USER_CONF_DIR/.plasma-notifications-off"
+        RESTART_PLASMA=1
+    else
+        echo "  Couldn't do it automatically. Right-click the system tray arrow → Configure System Tray"
+        echo "  → Entries → Notifications → 'Shown when relevant', then log out and back in."
+    fi
+fi
+
 say "Removing $AUTOSTART_FILE"
 rm -f "$AUTOSTART_FILE"
 rm -f "${XDG_DATA_HOME:-$HOME/.local/share}/applications/archpill-settings.desktop"
@@ -55,6 +68,11 @@ if [[ -d "$USER_CONF_DIR" ]]; then
     else
         say "Settings kept."
     fi
+fi
+
+if [[ "${RESTART_PLASMA:-0}" -eq 1 ]]; then
+    # Stop ArchPill first (done above), then restart Plasma's panel so it takes notifications back.
+    systemctl --user restart plasma-plasmashell.service 2>/dev/null || { kquitapp6 plasmashell; sleep 1; setsid plasmashell >/dev/null 2>&1 & }
 fi
 
 say "ArchPill removed. Packages (quickshell etc.) were left installed;"

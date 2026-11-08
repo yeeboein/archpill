@@ -17,7 +17,7 @@ FloatingWindow {
     color: Qt.rgba(Config.background.r, Config.background.g, Config.background.b, 1)
 
     property int step: 0
-    readonly property var steps: ["welcome", "use", "volume", "look", "behaviour", "shortcut", "done"]
+    readonly property var steps: ["welcome", "use", "volume", "notifications", "look", "behaviour", "shortcut", "done"]
     readonly property string shortcutCmd: "qs -c archpill ipc call archpill toggleControlCenter"
     property bool copied: false
 
@@ -48,6 +48,8 @@ FloatingWindow {
                     return useStep;
                 case "volume":
                     return volumeStep;
+                case "notifications":
+                    return notificationsStep;
                 case "look":
                     return lookStep;
                 case "behaviour":
@@ -278,6 +280,61 @@ FloatingWindow {
                 visible: Desktop.isKde && Plasma.plasmaVolumePopup === false
                 text: "If Plasma's popup still appears after this, log out and back in once."
                 sizeFactor: 0.95
+            }
+        }
+    }
+
+    Component {
+        id: notificationsStep
+        Column {
+            spacing: 14
+            Component.onCompleted: Notifs.checkOwner()
+            Title {
+                text: "Notifications in the pill"
+            }
+            Body {
+                text: "ArchPill can show your notifications: the pill grows to show them, then shrinks back. " + (Desktop.isKde ? "Right now Plasma shows them. Press the button to hand them to ArchPill (Plasma's panel restarts for a second). You can give them back any time, and uninstalling ArchPill does it for you." : "If another notification app is running (e.g. dunst or mako), close it and ArchPill takes over.")
+            }
+            Rectangle {
+                width: parent.width
+                height: nCol.implicitHeight + 24
+                radius: 14
+                color: Qt.rgba(Config.foreground.r, Config.foreground.g, Config.foreground.b, 0.05)
+                Column {
+                    id: nCol
+                    x: 14
+                    y: 12
+                    width: parent.width - 28
+                    spacing: 6
+                    SettingRow {
+                        label: "Handled by: " + Notifs.ownerName + (Notifs.active ? " ✓" : "")
+                        controlWidth: 220
+                        Row {
+                            anchors.right: parent.right
+                            spacing: 6
+                            SmallButton {
+                                visible: Desktop.isKde && !Notifs.active
+                                label: "Use ArchPill"
+                                highlight: true
+                                onClicked: Notifs.handOver()
+                            }
+                            SmallButton {
+                                visible: Notifs.active
+                                label: "Send a test"
+                                onClicked: Quickshell.execDetached(["notify-send", "-a", "ArchPill", "-i", Quickshell.shellPath("assets/logo.png"), "It works! 🎉", "Notifications now show up in the pill."])
+                            }
+                        }
+                    }
+                    PillText {
+                        visible: Notifs.handoverStatus !== ""
+                        width: parent.width
+                        wrapMode: Text.Wrap
+                        maximumLineCount: 3
+                        text: Notifs.handoverStatus
+                        color: Config.accent
+                        sizeFactor: 0.9
+                    }
+                }
             }
         }
     }

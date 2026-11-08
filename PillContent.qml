@@ -40,6 +40,8 @@ Row {
             return micModule;
         case "weather":
             return weatherModule;
+        case "notifications":
+            return bellModule;
         }
         Modules.warnUnknown(name);
         return null;
@@ -102,6 +104,12 @@ Row {
     Component {
         id: weatherModule
         M.WeatherTemp {}
+    }
+    Component {
+        id: bellModule
+        M.Bell {
+            screenName: root.screenName
+        }
     }
     Component {
         id: statModule

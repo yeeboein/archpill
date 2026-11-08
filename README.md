@@ -53,6 +53,7 @@ That's it. Everything below is the detailed version.
 - [Fonts](#fonts)
 - [Using ArchPill](#using-archpill)
 - [Customising](#customising)
+- [Notifications](#notifications)
 - [Volume popup & Plasma's popup](#volume-popup--plasmas-popup)
 - [Home (Windows) key](#home-windows-key)
 - [Keyboard shortcuts](#keyboard-shortcuts)
@@ -145,6 +146,10 @@ their own confirmation screen.
 - **ArchPill Settings app**: drag-and-drop layout for the pill and the control
   centre, 12 colour themes, every colour, sizes, corners, transparency, font,
   animation speed, behaviour and more. Changes show instantly.
+- **Notifications in the pill**: when one arrives the pill grows to show the
+  app icon, title, text and buttons, then shrinks back. Click to open, × to
+  dismiss, hover to keep it. History in the control centre, a bell with an
+  unread count for the pill, and Do Not Disturb.
 - **Wi-Fi and Bluetooth menus**: click the Wi-Fi or Bluetooth tile to see
   networks / devices and connect, disconnect, pair or forget them right in
   the control centre (the round icon still just toggles it on/off).
@@ -282,6 +287,27 @@ centre):
 Everything is saved to `~/.config/archpill/config.json`. Only the settings you
 change are stored there; defaults come from `config.default.json`. You can also
 edit the file by hand; ArchPill reloads it as soon as you save.
+
+## Notifications
+
+Only one program can show notifications. On KDE that's Plasma, so ArchPill
+needs them handed over once:
+
+**Easy way:** Settings → Behaviour → *Notifications* → **Use ArchPill** (the
+welcome tour offers this too). Plasma's panel restarts for a second. Then
+press **Test**.
+
+**By hand:** right-click the little arrow in the system tray → *Configure
+System Tray* → *Entries* → *Notifications* → **Disabled**, then log out and
+back in.
+
+**Undo:** press **Give back to Plasma**, set that tray entry back to *Shown
+when relevant*, or run `uninstall.sh` (it gives them back for you).
+
+On Hyprland / Sway / niri: stop your notification daemon (dunst, mako,
+swaync…) and remove it from your autostart; ArchPill takes over by itself.
+If another program keeps the notifications, ArchPill just logs it and carries
+on without them.
 
 ## Volume popup & Plasma's popup
 
@@ -421,7 +447,8 @@ cd ~/archpill && ./install.sh --no-packages --reset-config
 ```
 
 It stops ArchPill, removes its files, the autostart entry and the app-menu
-entry, and turns Plasma's volume popup back on if ArchPill turned it off. It
+entry, gives notifications back to Plasma and turns Plasma's volume popup back
+on if ArchPill changed them. It
 asks before deleting your settings. Packages are left installed; remove
 Quickshell with `sudo pacman -Rs quickshell` if you want.
 
@@ -456,8 +483,6 @@ settings/               ArchPill Settings app and the welcome tour
 assets/logo.png         the logo
 install.sh / uninstall.sh
 ```
-
-**Coming next:** showing notifications in the pill.
 
 ## License
 

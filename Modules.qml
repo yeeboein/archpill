@@ -12,6 +12,7 @@ Singleton {
         { id: "volume", name: "Volume", icon: "volume-up", desc: "Scroll to change, click to mute." },
         { id: "battery", name: "Battery", icon: "bolt", desc: "Charge level (hidden on desktops)." },
         { id: "control", name: "Control Centre Button", icon: "tune", desc: "Opens the control centre." },
+        { id: "notifications", name: "Notifications", icon: "bell", desc: "Bell with how many notifications you haven't seen." },
         { id: "network", name: "Wi-Fi", icon: "wifi", desc: "Connection icon and network name." },
         { id: "bluetooth", name: "Bluetooth", icon: "bluetooth", desc: "Shows when Bluetooth is on / connected." },
         { id: "mic", name: "Microphone", icon: "mic", desc: "Appears only while your mic is muted." },
