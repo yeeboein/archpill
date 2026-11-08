@@ -18,6 +18,13 @@ if command -v qs >/dev/null; then
 fi
 pkill -f "quickshell.*-c archpill|qs -c archpill" >/dev/null 2>&1 || true
 
+# Turn Plasma's volume popup back on if ArchPill turned it off.
+if [[ -f "$USER_CONF_DIR/.plasma-volume-osd-off" ]]; then
+    say "Turning Plasma's volume popup back on"
+    kwriteconfig6 --notify --file plasmaparc --group General --key VolumeOsd true || true
+    rm -f "$USER_CONF_DIR/.plasma-volume-osd-off"
+fi
+
 say "Removing $AUTOSTART_FILE"
 rm -f "$AUTOSTART_FILE"
 

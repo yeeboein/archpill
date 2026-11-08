@@ -45,6 +45,11 @@ Singleton {
     readonly property bool alwaysOpen: get("pill.alwaysOpen", false)
     readonly property bool networkShowName: get("network.showName", true)
 
+    // ---- Volume popup in the pill ---------------------------------------------
+    readonly property bool osdEnabled: get("osd.enabled", true)
+    readonly property int osdDuration: get("osd.duration", 1500)
+    readonly property int osdWidth: get("osd.width", 280)
+
     // ---- Expanded views (music dropdown, control centre) -------------------
     readonly property int mediaWidth: get("expanded.mediaWidth", 400)
     readonly property int controlWidth: get("expanded.controlWidth", 380)

@@ -3,6 +3,7 @@ import Quickshell
 import Quickshell.Wayland
 import qs
 import qs.services
+import qs.components
 import qs.modules as M
 
 // The pill: one transparent layer-shell window at the top-centre of a screen.
@@ -52,12 +53,14 @@ PanelWindow {
         return here ? PillState.expanded : "";
     }
     readonly property bool expanded: mode !== ""
+    // Volume popup (shown on the default screen, not while expanded).
+    readonly property bool osd: PillState.osd !== "" && isDefaultScreen && !expanded
     readonly property int expandedPad: 16
 
     // ---- reveal logic -------------------------------------------------------
     readonly property bool hovering: pillHover.hovered || triggerHover.hovered
     property bool revealed: false
-    readonly property bool open: revealed || PillState.pinned || expanded || PillState.settingsOpen || Config.alwaysOpen
+    readonly property bool open: revealed || PillState.pinned || expanded || osd || PillState.settingsOpen || Config.alwaysOpen
 
     onHoveringChanged: {
         if (hovering) {
@@ -233,7 +236,7 @@ PanelWindow {
             readonly property int bigHeight: Math.min(Config.expandedMaxHeight, (bigView.item ? bigView.item.implicitHeight : 0) + win.expandedPad * 2)
 
             anchors.horizontalCenter: parent.horizontalCenter
-            width: win.expanded ? bigWidth : compactWidth
+            width: win.expanded ? bigWidth : win.osd ? Config.osdWidth : compactWidth
             height: win.expanded ? Math.max(Config.pillHeight, bigHeight) : Config.pillHeight
             radius: win.expanded ? Config.expandedRadius : Math.min(Config.pillRadius, height / 2)
             color: Config.pillColor
@@ -283,7 +286,7 @@ PanelWindow {
                 id: modulesRow
                 anchors.centerIn: parent
                 spacing: Config.pillSpacing
-                opacity: win.expanded ? 0 : 1
+                opacity: win.expanded || win.osd ? 0 : 1
                 visible: opacity > 0
                 Behavior on opacity {
                     NumberAnimation {
@@ -300,6 +303,51 @@ PanelWindow {
                         sourceComponent: win.componentFor(modelData)
                         visible: status === Loader.Ready && !!item && item.shown !== false
                     }
+                }
+            }
+
+            // Volume popup: icon, bar, percentage.
+            Row {
+                anchors.centerIn: parent
+                spacing: 10
+                opacity: win.osd ? 1 : 0
+                visible: opacity > 0
+                Behavior on opacity {
+                    NumberAnimation {
+                        duration: Config.animDuration / 2
+                    }
+                }
+                Icon {
+                    anchors.verticalCenter: parent.verticalCenter
+                    size: 18
+                    name: Audio.muted ? "volume-off" : Audio.volume < 0.01 ? "volume-mute" : Audio.volume < 0.5 ? "volume-down" : "volume-up"
+                    color: Audio.muted ? Config.subtle : Config.foreground
+                }
+                Rectangle {
+                    anchors.verticalCenter: parent.verticalCenter
+                    width: pill.width - Config.pillPadding * 2 - 18 - 44 - 20
+                    height: 6
+                    radius: 3
+                    color: Qt.rgba(Config.foreground.r, Config.foreground.g, Config.foreground.b, 0.18)
+                    Rectangle {
+                        height: parent.height
+                        radius: 3
+                        width: parent.width * Math.min(1, Audio.volume / (Math.max(1, Config.maxVolume) / 100))
+                        color: Audio.muted ? Config.subtle : Audio.volume > 1.0 ? Config.warning : Config.foreground
+                        Behavior on width {
+                            NumberAnimation {
+                                duration: 80
+                            }
+                        }
+                    }
+                }
+                PillText {
+                    anchors.verticalCenter: parent.verticalCenter
+                    width: 44
+                    horizontalAlignment: Text.AlignRight
+                    text: Audio.muted ? "Muted" : Audio.percent + "%"
+                    color: Audio.muted ? Config.subtle : Config.foreground
+                    sizeFactor: 0.95
                 }
             }
 

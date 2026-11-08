@@ -2,10 +2,12 @@ import QtQuick
 import Quickshell
 import qs
 import qs.components
+import qs.services
 
 // How the pill appears, hides and reacts.
 Column {
     width: parent ? parent.width : 600
+    Component.onCompleted: Plasma.refresh()
     spacing: 22
 
     Section {
@@ -100,6 +102,60 @@ Column {
                 suffix: " ms"
                 value: Config.closeDelay
                 onMoved: v => Config.setValue("expanded.closeDelay", v)
+            }
+        }
+    }
+
+    Section {
+        title: "Volume popup"
+        note: "When the volume changes (keyboard keys, panel, apps), the pill shows a volume bar for a moment."
+        SettingRow {
+            label: "Show volume changes in the pill"
+            Toggle {
+                checked: Config.osdEnabled
+                onToggled: v => Config.setValue("osd.enabled", v)
+            }
+        }
+        SettingRow {
+            label: "How long it stays"
+            NumberSlider {
+                from: 500
+                to: 5000
+                step: 100
+                suffix: " ms"
+                value: Config.osdDuration
+                onMoved: v => Config.setValue("osd.duration", v)
+            }
+        }
+        SettingRow {
+            label: "Width"
+            NumberSlider {
+                from: 160
+                to: 600
+                step: 10
+                suffix: " px"
+                value: Config.osdWidth
+                onMoved: v => Config.setValue("osd.width", v)
+            }
+        }
+        SettingRow {
+            label: "Plasma's own volume popup"
+            description: Plasma.plasmaVolumePopup ? "On - you'll see both. Turn it off to only see the pill." : "Off - only the pill shows volume changes. (uninstall.sh turns it back on.)"
+            controlWidth: 220
+            SmallButton {
+                anchors.right: parent.right
+                label: Plasma.plasmaVolumePopup ? "Turn Plasma's off" : "Turn Plasma's back on"
+                highlight: Plasma.plasmaVolumePopup
+                onClicked: Plasma.setPlasmaVolumePopup(!Plasma.plasmaVolumePopup)
+            }
+        }
+        SettingRow {
+            label: "Try it"
+            controlWidth: 160
+            SmallButton {
+                anchors.right: parent.right
+                label: "Show the popup"
+                onClicked: PillState.showOsd("volume")
             }
         }
     }

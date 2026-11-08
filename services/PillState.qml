@@ -2,6 +2,7 @@ pragma Singleton
 
 import QtQuick
 import Quickshell
+import qs
 
 // Runtime state shared by every ArchPill window (one per monitor).
 Singleton {
@@ -21,6 +22,18 @@ Singleton {
     property bool dnd: false
     // The settings app window.
     property bool settingsOpen: false
+
+    // Volume popup: "" or "volume". Shown briefly when the volume changes.
+    property string osd: ""
+    function showOsd(kind) {
+        osd = kind;
+        osdTimer.restart();
+    }
+    Timer {
+        id: osdTimer
+        interval: Config.osdDuration
+        onTriggered: root.osd = ""
+    }
 
     function open(mode, screen) {
         screenName = screen || "";

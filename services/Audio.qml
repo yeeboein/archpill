@@ -15,6 +15,23 @@ Singleton {
     readonly property bool muted: ready ? sink.audio.muted : false
     readonly property int percent: Math.round(volume * 100)
 
+    // Tell the pill when the volume or mute changes (from keys, the panel,
+    // apps...). Ignored for a moment after the output device changes, so
+    // plugging in headphones doesn't flash the popup.
+    onVolumeChanged: announce()
+    onMutedChanged: announce()
+    onSinkChanged: settle.restart()
+    onReadyChanged: settle.restart()
+    function announce() {
+        if (ready && !settle.running && Config.osdEnabled)
+            PillState.showOsd("volume");
+    }
+    Timer {
+        id: settle
+        interval: 1500
+        running: true
+    }
+
     function setVolume(v) {
         if (!ready)
             return;
