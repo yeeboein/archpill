@@ -7,9 +7,12 @@ Item {
     id: root
     property bool shown: true
     property string style: "dot"
+    property bool vertical: false // in a vertical pill everything turns sideways
 
-    implicitWidth: style === "wide" ? 24 : style === "space" ? 6 : style === "line" ? 1 : 4
-    implicitHeight: style === "line" ? Math.round(Config.pillHeight * 0.45) : 4
+    readonly property real along: style === "wide" ? 24 : style === "space" ? 6 : style === "line" ? 1 : 4
+    readonly property real across: style === "line" ? Math.round(Config.pillHeight * 0.45) : 4
+    implicitWidth: vertical ? across : along
+    implicitHeight: vertical ? along : across
 
     Rectangle {
         visible: root.style === "dot"

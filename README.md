@@ -280,7 +280,7 @@ centre):
 | **Control Centre** | Widgets and their order, the widget catalogue (search + categories), app tiles, your own buttons |
 | **Pill** (extra) | A live preview of your pill sits at the top while you edit. Separators (dot, line, space, wide space) can be added as many times as you like |
 | **Appearance** | Themes, style (solid / liquid glass / black + glass edges / tinted glass), every colour, opacity, size, corner radius, padding, font (browse every installed font, or press *Get more fonts* for a free font pack), text size, animation speed |
-| **Behaviour** | **Position** (top, top-left, top-right, left/right side, bottom, bottom-left, bottom-right), always show or hover, hover area, delays, what a click does, volume popup, layer, screens |
+| **Behaviour** | **Position** (top, top-left, top-right, left/right side, bottom, bottom-left, bottom-right; at the bottom and sides it always stays over the taskbar, and on the sides the pill stands up vertically with upright text), always show or hover, hover area, delays, what a click does, volume popup, layer, screens |
 | **Music & More** | Preferred / ignored music players, volume step, max volume, battery warning, weather location, dark/light schemes, terminal |
 | **Shortcuts & Reset** | Copy-paste shortcut commands, welcome tour, open the settings file, reset everything |
 

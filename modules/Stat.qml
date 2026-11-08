@@ -8,6 +8,8 @@ import qs.services
 Item {
     id: root
     property bool shown: true
+    // Set by the pill when it stands vertically on a screen side.
+    property bool vertical: false
     property string kind: "cpu"
 
     readonly property real frac: kind === "cpu" ? SystemStats.cpu : kind === "ram" ? SystemStats.mem : kind === "gpu" ? Math.max(0, SystemStats.gpu) : Math.min(1, Math.max(0, (SystemStats.cpuTemp - 30) / 70))
@@ -20,20 +22,25 @@ Item {
     Component.onCompleted: SystemStats.watchers++
     Component.onDestruction: SystemStats.watchers--
 
-    Row {
+    Grid {
         id: row
-        spacing: 5
+        // One row normally, one column in a vertical pill (left/right side).
+        rows: root.vertical ? -1 : 1
+        columns: root.vertical ? 1 : -1
+        horizontalItemAlignment: Grid.AlignHCenter
+        verticalItemAlignment: Grid.AlignVCenter
+        rowSpacing: 2
+        columnSpacing: 5
         Icon {
-            anchors.verticalCenter: parent.verticalCenter
             size: 14
             name: root.kind === "ram" ? "chart" : root.kind === "gpu" ? "gamepad" : root.kind === "temp" ? "snowflake" : "chip"
             color: root.frac > 0.85 ? Config.critical : root.frac > 0.65 ? Config.warning : Config.subtle
         }
         PillText {
-            anchors.verticalCenter: parent.verticalCenter
             text: root.value
             // fixed width so the pill doesn't wobble
-            width: Math.max(implicitWidth, 32)
+            width: root.vertical ? implicitWidth : Math.max(implicitWidth, 32)
+            sizeFactor: root.vertical ? 0.8 : 1
         }
     }
 }

@@ -9,22 +9,28 @@ Item {
     readonly property var adapter: Bluetooth.defaultAdapter
     readonly property int connected: adapter ? adapter.devices.values.filter(d => d.connected).length : 0
     property bool shown: !!adapter && adapter.enabled
+    // Set by the pill when it stands vertically on a screen side.
+    property bool vertical: false
 
     implicitWidth: row.implicitWidth
     implicitHeight: row.implicitHeight
 
-    Row {
+    Grid {
         id: row
-        spacing: 3
+        // One row normally, one column in a vertical pill (left/right side).
+        rows: root.vertical ? -1 : 1
+        columns: root.vertical ? 1 : -1
+        horizontalItemAlignment: Grid.AlignHCenter
+        verticalItemAlignment: Grid.AlignVCenter
+        rowSpacing: 2
+        columnSpacing: 3
         Icon {
-            anchors.verticalCenter: parent.verticalCenter
             size: 15
             name: "bluetooth"
             color: root.connected > 0 ? Config.accent : Config.foreground
         }
         PillText {
             visible: root.connected > 1
-            anchors.verticalCenter: parent.verticalCenter
             text: root.connected
             sizeFactor: 0.85
         }

@@ -2,16 +2,24 @@ import QtQuick
 import qs
 import qs.modules as M
 
-// The row of modules inside the pill ("pill.modules" in the config).
+// The modules inside the pill ("pill.modules" in the config): a row, or a
+// column when the pill stands vertically on a screen side.
 // Used by the real pill and by the live preview in ArchPill Settings.
-Row {
+Grid {
     id: root
 
     property var modules: Config.modules
+    // Vertical pill (screen side): modules stack top to bottom, text stays upright.
+    property bool vertical: false
+    rows: vertical ? -1 : 1
+    columns: vertical ? 1 : -1
+    horizontalItemAlignment: Grid.AlignHCenter
+    verticalItemAlignment: Grid.AlignVCenter
     // Which screen this pill is on (used by modules that open things).
     property string screenName: ""
 
-    spacing: Config.pillSpacing
+    rowSpacing: Math.max(6, Math.round(Config.pillSpacing * 0.7))
+    columnSpacing: Config.pillSpacing
 
     // Name in config -> module. Separators can be added as often as you like:
     // "separator" (dot), "separator:line", "separator:space", "separator:wide".
@@ -52,7 +60,6 @@ Row {
 
         delegate: Loader {
             required property var modelData
-            anchors.verticalCenter: parent ? parent.verticalCenter : undefined
             sourceComponent: root.componentFor(modelData)
             visible: status === Loader.Ready && !!item && item.shown !== false
             onLoaded: {
@@ -61,6 +68,8 @@ Row {
                     item.style = id.indexOf(":") !== -1 ? id.split(":")[1] : "dot";
                 if ("kind" in item)
                     item.kind = id;
+                if ("vertical" in item)
+                    item.vertical = Qt.binding(() => root.vertical);
             }
         }
     }

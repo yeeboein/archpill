@@ -35,6 +35,8 @@ Singleton {
     readonly property int edgeMargin: get("pill.edgeMargin", 12) // gap from the side when in a corner
     // "top", "top-left", "top-right", "bottom", "bottom-left", "bottom-right", "left", "right"
     readonly property string position: get("pill.position", "top")
+    // On the left/right side: stand the pill up (modules stacked, text upright).
+    readonly property bool sideVertical: get("pill.sideVertical", true)
     readonly property string idleMode: get("pill.idleMode", "tiny") // "tiny" or "hidden"
     readonly property int triggerWidth: get("pill.triggerWidth", 420)
     readonly property int triggerHeight: Math.max(1, get("pill.triggerHeight", 3))

@@ -8,17 +8,24 @@ Item {
     id: root
 
     property bool shown: Audio.ready
+    // Set by the pill when it stands vertically on a screen side.
+    property bool vertical: false
 
     implicitWidth: row.implicitWidth
     implicitHeight: Math.max(row.implicitHeight, 24)
 
-    Row {
+    Grid {
         id: row
+        // One row normally, one column in a vertical pill (left/right side).
+        rows: root.vertical ? -1 : 1
+        columns: root.vertical ? 1 : -1
+        horizontalItemAlignment: Grid.AlignHCenter
+        verticalItemAlignment: Grid.AlignVCenter
+        rowSpacing: 2
         anchors.verticalCenter: parent.verticalCenter
-        spacing: 5
+        columnSpacing: 5
 
         Icon {
-            anchors.verticalCenter: parent.verticalCenter
             size: 16
             color: Audio.muted ? Config.subtle : Config.foreground
             name: Audio.muted ? "volume-off" : Audio.volume < 0.01 ? "volume-mute" : Audio.volume < 0.5 ? "volume-down" : "volume-up"
@@ -26,12 +33,12 @@ Item {
         PillText {
             id: pct
             visible: Config.volumeShowPercent
-            anchors.verticalCenter: parent.verticalCenter
             text: Audio.percent + "%"
             color: Audio.muted ? Config.subtle : Config.foreground
             // fixed width so the pill doesn't wobble while scrolling
             width: Math.max(implicitWidth, metrics.width)
-            horizontalAlignment: Text.AlignRight
+            horizontalAlignment: root.vertical ? Text.AlignHCenter : Text.AlignRight
+            sizeFactor: root.vertical ? 0.8 : 1
             TextMetrics {
                 id: metrics
                 font: pct.font

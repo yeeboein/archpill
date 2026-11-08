@@ -34,6 +34,8 @@ PanelWindow {
     readonly property string hAlign: pos.indexOf("left") !== -1 ? "left" : pos.indexOf("right") !== -1 ? "right" : "center"
     readonly property int gap: Config.topMargin       // distance from the edge it's attached to
     readonly property int sideGap: Config.edgeMargin  // distance from the side, in the corners
+    // On the left/right side the pill stands up: modules stack vertically.
+    readonly property bool vertical: onSide && Config.sideVertical
 
     anchors.top: atTop
     anchors.bottom: atBottom
@@ -44,7 +46,9 @@ PanelWindow {
     color: "transparent"
 
     WlrLayershell.namespace: "archpill"
-    WlrLayershell.layer: Config.layer === "top" ? WlrLayer.Top : WlrLayer.Overlay
+    // Overlay = above panels. At the bottom or on a side the pill always uses
+    // it, so it's never hidden behind the taskbar.
+    WlrLayershell.layer: Config.layer === "top" && atTop ? WlrLayer.Top : WlrLayer.Overlay
     WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
 
     // Big enough for the widest/tallest pill; the transparent part costs
@@ -224,13 +228,15 @@ PanelWindow {
         Rectangle {
             id: pill
 
-            readonly property int compactWidth: Math.max(Config.pillMinWidth, Math.min(Config.pillMaxWidth, modulesRow.implicitWidth + Config.pillPadding * 2))
+            readonly property int compactWidth: win.vertical ? Math.max(Config.pillHeight, modulesRow.implicitWidth + 16) : Math.max(Config.pillMinWidth, Math.min(Config.pillMaxWidth, modulesRow.implicitWidth + Config.pillPadding * 2))
+            // vertical pill: as tall as its modules
+            readonly property int compactHeight: win.vertical ? Math.max(Config.pillHeight * 2, Math.min(win.height - 20, modulesRow.implicitHeight + Config.pillPadding * 2)) : Config.pillHeight
             readonly property int bigWidth: win.mode === "media" ? Config.mediaWidth : Config.controlWidth
             readonly property int bigHeight: Math.min(Config.expandedMaxHeight, (bigView.item ? bigView.item.implicitHeight : 0) + win.expandedPad * 2)
 
-            width: win.expanded ? bigWidth : win.notif ? Config.notifWidth : win.osd ? Config.osdWidth : compactWidth
-            height: win.expanded ? Math.max(Config.pillHeight, bigHeight) + (win.osdStrip ? win.osdStripHeight : 0) : win.notif ? Math.max(Config.pillHeight, notifView.implicitHeight + win.expandedPad * 2) : Config.pillHeight
-            radius: win.expanded ? Config.expandedRadius : win.notif ? Math.min(Config.expandedRadius, height / 2) : Math.min(Config.pillRadius, height / 2)
+            width: win.expanded ? bigWidth : win.notif ? Config.notifWidth : win.osd ? (win.vertical ? Config.pillHeight + 8 : Config.osdWidth) : compactWidth
+            height: win.expanded ? Math.max(Config.pillHeight, bigHeight) + (win.osdStrip ? win.osdStripHeight : 0) : win.notif ? Math.max(Config.pillHeight, notifView.implicitHeight + win.expandedPad * 2) : win.osd && win.vertical ? Math.round(Config.osdWidth * 0.7) : compactHeight
+            radius: win.expanded ? Config.expandedRadius : win.notif ? Math.min(Config.expandedRadius, height / 2) : Math.min(Config.pillRadius, Math.min(width, height) / 2)
             color: "transparent"
             clip: true
 
@@ -305,6 +311,7 @@ PanelWindow {
                 id: modulesRow
                 anchors.centerIn: parent
                 screenName: win.screenName
+                vertical: win.vertical
                 opacity: win.expanded || win.osd || win.notif ? 0 : 1
                 visible: opacity > 0
                 Behavior on opacity {
@@ -335,7 +342,9 @@ PanelWindow {
             // Volume popup: icon, bar, percentage.
             VolumeBar {
                 anchors.centerIn: parent
-                width: pill.width - Config.pillPadding * 2
+                vertical: win.vertical
+                width: win.vertical ? pill.width - 8 : pill.width - Config.pillPadding * 2
+                height: win.vertical ? pill.height - 24 : implicitHeight
                 // "OSD pop": springs in from slightly smaller.
                 scale: win.osd || !Config.anim("osdPop") ? 1 : 0.85
                 Behavior on scale {

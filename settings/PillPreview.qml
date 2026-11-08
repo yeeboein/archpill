@@ -6,7 +6,8 @@ import qs.components
 // of the Pill and Appearance pages. It's for looking only (not clickable).
 Rectangle {
     id: root
-    implicitHeight: Config.pillHeight + 40
+    readonly property bool vertical: (Config.position === "left" || Config.position === "right") && Config.sideVertical
+    implicitHeight: vertical ? Math.min(360, content.implicitHeight + Config.pillPadding * 2 + 40) : Config.pillHeight + 40
     gradient: Gradient {
         orientation: Gradient.Horizontal
         GradientStop {
@@ -35,17 +36,18 @@ Rectangle {
     Item {
         id: pill
         anchors.centerIn: parent
-        width: Math.min(root.width - 24, Math.max(Config.pillMinWidth, Math.min(Config.pillMaxWidth, content.implicitWidth + Config.pillPadding * 2)))
-        height: Config.pillHeight
+        width: root.vertical ? Math.max(Config.pillHeight, content.implicitWidth + 16) : Math.min(root.width - 24, Math.max(Config.pillMinWidth, Math.min(Config.pillMaxWidth, content.implicitWidth + Config.pillPadding * 2)))
+        height: root.vertical ? Math.min(root.height - 24, content.implicitHeight + Config.pillPadding * 2) : Config.pillHeight
         clip: true
 
         GlassBackground {
             anchors.fill: parent
-            radius: Math.min(Config.pillRadius, height / 2)
+            radius: Math.min(Config.pillRadius, Math.min(width, height) / 2)
         }
         PillContent {
             id: content
             anchors.centerIn: parent
+            vertical: root.vertical
             enabled: false // preview only
         }
     }

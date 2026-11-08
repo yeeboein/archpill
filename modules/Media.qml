@@ -12,6 +12,8 @@ Item {
     readonly property var player: Players.active
     property bool shown: Players.hasPlayer
     property string screenName: ""
+    // Vertical pill: just the album art (click it for the big player).
+    property bool vertical: false
 
     implicitWidth: row.implicitWidth
     implicitHeight: row.implicitHeight
@@ -22,7 +24,7 @@ Item {
 
         // Album art (falls back to a music note).
         Rectangle {
-            visible: Config.showArt
+            visible: Config.showArt || root.vertical
             width: 26
             height: 26
             radius: 6
@@ -51,6 +53,7 @@ Item {
 
         Column {
             id: titles
+            visible: !root.vertical
             anchors.verticalCenter: parent.verticalCenter
             width: Math.min(Config.maxTitleWidth, Math.max(title.implicitWidth, artist.implicitWidth))
 
@@ -71,7 +74,7 @@ Item {
         }
 
         Row {
-            visible: Config.mediaShowControls
+            visible: Config.mediaShowControls && !root.vertical
             anchors.verticalCenter: parent.verticalCenter
             spacing: 0
 
@@ -99,7 +102,7 @@ Item {
     // Click the song to open the big music dropdown.
     MouseArea {
         x: 0
-        width: titles.x + titles.width
+        width: root.vertical ? parent.width : titles.x + titles.width
         height: parent.height
         cursorShape: Qt.PointingHandCursor
         onClicked: PillState.toggle("media", root.screenName)

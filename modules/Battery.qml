@@ -10,6 +10,8 @@ Item {
 
     readonly property var dev: UPower.displayDevice
     property bool shown: !!dev && dev.ready && (dev.isLaptopBattery || (dev.isPresent && dev.type === UPowerDeviceType.Battery))
+    // Set by the pill when it stands vertically on a screen side.
+    property bool vertical: false
 
     // percentage is 0..1 in Quickshell
     readonly property real level: dev ? Math.max(0, Math.min(1, dev.percentage)) : 0
@@ -21,13 +23,18 @@ Item {
     implicitWidth: row.implicitWidth
     implicitHeight: row.implicitHeight
 
-    Row {
+    Grid {
         id: row
-        spacing: 6
+        // One row normally, one column in a vertical pill (left/right side).
+        rows: root.vertical ? -1 : 1
+        columns: root.vertical ? 1 : -1
+        horizontalItemAlignment: Grid.AlignHCenter
+        verticalItemAlignment: Grid.AlignVCenter
+        rowSpacing: 2
+        columnSpacing: 6
 
         Icon {
             visible: root.pluggedIn
-            anchors.verticalCenter: parent.verticalCenter
             size: 13
             name: "bolt"
             color: root.charging ? Config.good : Config.subtle
@@ -37,7 +44,6 @@ Item {
         Item {
             width: 24
             height: 12
-            anchors.verticalCenter: parent.verticalCenter
 
             Rectangle {
                 id: body
@@ -68,8 +74,8 @@ Item {
 
         PillText {
             visible: Config.batteryShowPercent
-            anchors.verticalCenter: parent.verticalCenter
             text: root.percent + "%"
+            sizeFactor: root.vertical ? 0.8 : 1
             color: root.low ? Config.critical : Config.foreground
         }
     }

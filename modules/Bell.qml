@@ -8,24 +8,30 @@ import qs.services
 Item {
     id: root
     property bool shown: true
+    // Set by the pill when it stands vertically on a screen side.
+    property bool vertical: false
     property string screenName: ""
 
     implicitWidth: row.implicitWidth
     implicitHeight: 20
 
-    Row {
+    Grid {
         id: row
+        // One row normally, one column in a vertical pill (left/right side).
+        rows: root.vertical ? -1 : 1
+        columns: root.vertical ? 1 : -1
+        horizontalItemAlignment: Grid.AlignHCenter
+        verticalItemAlignment: Grid.AlignVCenter
+        rowSpacing: 2
         anchors.verticalCenter: parent.verticalCenter
-        spacing: 3
+        columnSpacing: 3
         Icon {
-            anchors.verticalCenter: parent.verticalCenter
             name: PillState.dnd ? "bell-off" : "bell"
             size: 15
             color: Notifs.unread > 0 && !PillState.dnd ? Config.accent : Config.subtle
         }
         PillText {
             visible: Notifs.unread > 0
-            anchors.verticalCenter: parent.verticalCenter
             text: Notifs.unread > 99 ? "99+" : Notifs.unread
             sizeFactor: 0.85
         }

@@ -74,6 +74,24 @@ Column {
             }
         }
         SettingRow {
+            visible: Config.position === "left" || Config.position === "right"
+            label: "Stand the pill up on the side"
+            description: "Modules stack top to bottom; text stays upright and readable"
+            Toggle {
+                checked: Config.sideVertical
+                onToggled: v => Config.setValue("pill.sideVertical", v)
+            }
+        }
+        PillText {
+            visible: Config.position.indexOf("bottom") === 0 || Config.position === "left" || Config.position === "right"
+            width: parent.width
+            wrapMode: Text.Wrap
+            maximumLineCount: 2
+            text: "Here the pill always stays over your taskbar/panels."
+            color: Config.subtle
+            sizeFactor: 0.85
+        }
+        SettingRow {
             label: "Gap from the screen edge"
             NumberSlider {
                 from: 0
@@ -412,7 +430,7 @@ Column {
         title: "Placement"
         SettingRow {
             label: "Layer"
-            description: "Above everything covers fullscreen apps too; Normal hides behind fullscreen video and games"
+            description: "Above everything covers fullscreen apps too; Normal hides behind fullscreen video and games (only for the top positions; at the bottom and sides it's always above the taskbar)"
             controlWidth: 300
             Choice {
                 options: [{ label: "Above everything", value: "overlay" }, { label: "Normal", value: "top" }]
