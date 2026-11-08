@@ -57,6 +57,9 @@ Singleton {
     readonly property int expandedRadius: get("expanded.radius", 26)
     readonly property bool closeOnLeave: get("expanded.closeOnLeave", true)
     readonly property int closeDelay: get("expanded.closeDelay", 700)
+    // Invisible area around the open control centre / music dropdown that
+    // still counts as hovering it.
+    readonly property int hoverMargin: Math.max(0, get("expanded.hoverMargin", 40))
 
     // ---- Look ---------------------------------------------------------------
     readonly property color background: get("colors.background", "#111114")

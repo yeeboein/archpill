@@ -36,8 +36,8 @@ PanelWindow {
 
     // Big enough for the widest/tallest pill; the transparent part costs
     // almost nothing and is click-through thanks to the mask.
-    implicitWidth: Math.max(Config.pillMaxWidth, Config.triggerWidth, Config.mediaWidth, Config.controlWidth) + 16
-    implicitHeight: Config.topMargin + Math.max(Config.pillHeight, Config.expandedMaxHeight) + 8
+    implicitWidth: Math.max(Config.pillMaxWidth, Config.triggerWidth, Math.max(Config.mediaWidth, Config.controlWidth) + Config.hoverMargin * 2) + 16
+    implicitHeight: Config.topMargin + Math.max(Config.pillHeight, Config.expandedMaxHeight) + Config.hoverMargin + 8
 
     // ---- expanded mode -------------------------------------------------------
     // Which screen an IPC command (no screen given) opens on.
@@ -62,17 +62,30 @@ PanelWindow {
     property bool revealed: false
     readonly property bool open: revealed || PillState.pinned || expanded || osd || PillState.settingsOpen || Config.alwaysOpen
 
+    // Becomes true once the mouse has been on the expanded pill. Until then
+    // it doesn't close quickly (the pill changes size when it opens, so the
+    // mouse often ends up just outside it).
+    property bool armed: false
+    onExpandedChanged: {
+        armed = expanded && hovering;
+        closeTimer.stop();
+    }
+
     onHoveringChanged: {
         if (hovering) {
             hideTimer.stop();
             closeTimer.stop();
+            if (expanded)
+                armed = true;
             if (!revealed)
                 showTimer.restart();
         } else {
             showTimer.stop();
             hideTimer.restart();
-            if (expanded && Config.closeOnLeave)
+            if (expanded && Config.closeOnLeave) {
+                closeTimer.interval = armed ? Config.closeDelay : Math.max(Config.closeDelay, 2500);
                 closeTimer.restart();
+            }
         }
     }
 
@@ -88,7 +101,6 @@ PanelWindow {
     }
     Timer {
         id: closeTimer
-        interval: Config.closeDelay
         onTriggered: if (win.expanded && !win.hovering) PillState.close()
     }
 
@@ -219,10 +231,15 @@ PanelWindow {
     // the mouse never "falls through" the gap above the pill.
     Item {
         id: hitbox
+
+        // Invisible margin around an expanded pill that still counts as
+        // "on it", so it doesn't close the moment the mouse slips off the edge.
+        readonly property int margin: win.expanded ? Config.hoverMargin : 0
+
         anchors.horizontalCenter: parent.horizontalCenter
         y: 0
-        width: pill.width
-        height: Config.topMargin + pill.height
+        width: pill.width + margin * 2
+        height: Config.topMargin + pill.height + margin
 
         HoverHandler {
             id: pillHover

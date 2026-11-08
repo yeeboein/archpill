@@ -94,6 +94,18 @@ Column {
             }
         }
         SettingRow {
+            label: "Safety margin"
+            description: "Invisible border around the open control centre that still counts as \"on it\""
+            NumberSlider {
+                from: 0
+                to: 120
+                step: 5
+                suffix: " px"
+                value: Config.hoverMargin
+                onMoved: v => Config.setValue("expanded.hoverMargin", v)
+            }
+        }
+        SettingRow {
             label: "Close delay"
             NumberSlider {
                 from: 100
