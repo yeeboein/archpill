@@ -24,7 +24,21 @@ PanelWindow {
     screen: modelData
     readonly property string screenName: modelData ? modelData.name : ""
 
-    anchors.top: true
+    // ---- where on the screen (Settings → Behaviour → Position) ---------------
+    // "top", "top-left", "top-right", "bottom", "bottom-left", "bottom-right",
+    // "left" or "right" (middle of that side).
+    readonly property string pos: Config.position
+    readonly property bool atTop: pos.indexOf("top") === 0
+    readonly property bool atBottom: pos.indexOf("bottom") === 0
+    readonly property bool onSide: pos === "left" || pos === "right"   // slides in sideways
+    readonly property string hAlign: pos.indexOf("left") !== -1 ? "left" : pos.indexOf("right") !== -1 ? "right" : "center"
+    readonly property int gap: Config.topMargin       // distance from the edge it's attached to
+    readonly property int sideGap: Config.edgeMargin  // distance from the side, in the corners
+
+    anchors.top: atTop
+    anchors.bottom: atBottom
+    anchors.left: hAlign === "left"
+    anchors.right: hAlign === "right"
     exclusionMode: ExclusionMode.Ignore
     exclusiveZone: 0
     color: "transparent"
@@ -35,8 +49,14 @@ PanelWindow {
 
     // Big enough for the widest/tallest pill; the transparent part costs
     // almost nothing and is click-through thanks to the mask.
-    implicitWidth: Math.max(Config.pillMaxWidth, Config.triggerWidth, Math.max(Config.mediaWidth, Config.controlWidth) + Config.hoverMargin * 2) + 16
-    implicitHeight: Config.topMargin + Math.max(Config.pillHeight, Config.expandedMaxHeight) + osdStripHeight + Config.hoverMargin + 8
+    implicitWidth: Math.max(Config.pillMaxWidth, Config.triggerWidth, Math.max(Config.mediaWidth, Config.controlWidth) + Config.hoverMargin * 2) + 16 + Math.max(Config.edgeMargin, Config.topMargin)
+    implicitHeight: Math.max(Config.topMargin + Math.max(Config.pillHeight, Config.expandedMaxHeight) + osdStripHeight + Config.hoverMargin + 8, onSide ? Config.triggerWidth : 0)
+
+    // Where the open pill sits inside this window, and where it hides.
+    readonly property real restX: hAlign === "left" ? (onSide ? gap : sideGap) : hAlign === "right" ? width - pill.width - (onSide ? gap : sideGap) : (width - pill.width) / 2
+    readonly property real restY: atTop ? gap : atBottom ? height - pill.height - gap : (height - pill.height) / 2
+    readonly property real hiddenX: !onSide ? restX : hAlign === "left" ? -pill.width - 4 : width + 4
+    readonly property real hiddenY: onSide ? restY : atTop ? -pill.height - 4 : height + 4
 
     // ---- expanded mode -------------------------------------------------------
     // Which screen an IPC command (no screen given) opens on.
@@ -125,12 +145,13 @@ PanelWindow {
     }
 
     // ---- idle indicator ("tiny" mode) --------------------------------------
+    // A small bar on the edge where the pill hides.
     Rectangle {
-        anchors.horizontalCenter: parent.horizontalCenter
-        y: 2
-        width: 64
-        height: 4
+        width: win.onSide ? 4 : 64
+        height: win.onSide ? 64 : 4
         radius: 2
+        x: win.onSide ? (win.hAlign === "left" ? 2 : win.width - width - 2) : Math.max(2, Math.min(win.width - width - 2, win.restX + pill.width / 2 - width / 2))
+        y: win.onSide ? (win.height - height) / 2 : win.atTop ? 2 : win.height - height - 2
         color: Config.foreground
         opacity: (Config.idleMode === "tiny" && !win.open) ? 0.35 : 0
         visible: opacity > 0
@@ -141,21 +162,23 @@ PanelWindow {
         }
     }
 
-    // Thin strip at the top edge that wakes the pill up.
+    // Thin strip along the edge that wakes the pill up.
     Item {
         id: trigger
-        anchors.horizontalCenter: parent.horizontalCenter
-        y: 0
-        width: Config.triggerWidth
-        height: Config.idleMode === "tiny" ? Math.max(Config.triggerHeight, 6) : Config.triggerHeight
+        readonly property int thickness: Config.idleMode === "tiny" ? Math.max(Config.triggerHeight, 6) : Config.triggerHeight
+        readonly property int length: Math.min(Config.triggerWidth, win.onSide ? win.height : win.width)
+        width: win.onSide ? thickness : length
+        height: win.onSide ? length : thickness
+        x: win.onSide ? (win.hAlign === "left" ? 0 : win.width - width) : Math.max(0, Math.min(win.width - width, win.restX + pill.width / 2 - width / 2))
+        y: win.onSide ? (win.height - height) / 2 : win.atTop ? 0 : win.height - height
         HoverHandler {
             id: triggerHover
         }
     }
 
     // ---- the pill -----------------------------------------------------------
-    // `hitbox` spans from the top edge down to the bottom of the open pill, so
-    // the mouse never "falls through" the gap above the pill.
+    // `hitbox` spans from the screen edge to the far side of the open pill, so
+    // the mouse never "falls through" the gap between the edge and the pill.
     Item {
         id: hitbox
 
@@ -163,10 +186,10 @@ PanelWindow {
         // "on it", so it doesn't close the moment the mouse slips off the edge.
         readonly property int margin: win.expanded ? Config.hoverMargin : 0
 
-        anchors.horizontalCenter: parent.horizontalCenter
-        y: 0
-        width: pill.width + margin * 2
-        height: Config.topMargin + pill.height + margin
+        x: win.onSide ? (win.hAlign === "left" ? 0 : win.restX - margin) : Math.max(0, win.restX - margin)
+        y: win.onSide ? win.restY - margin : win.atTop ? 0 : win.restY - margin
+        width: win.onSide ? win.gap + pill.width + margin : Math.min(win.width - x, pill.width + margin * 2 + (win.hAlign !== "center" ? win.sideGap : 0))
+        height: win.onSide ? pill.height + margin * 2 : win.gap + pill.height + margin
 
         HoverHandler {
             id: pillHover
@@ -179,7 +202,6 @@ PanelWindow {
             readonly property int bigWidth: win.mode === "media" ? Config.mediaWidth : Config.controlWidth
             readonly property int bigHeight: Math.min(Config.expandedMaxHeight, (bigView.item ? bigView.item.implicitHeight : 0) + win.expandedPad * 2)
 
-            anchors.horizontalCenter: parent.horizontalCenter
             width: win.expanded ? bigWidth : win.osd ? Config.osdWidth : compactWidth
             height: win.expanded ? Math.max(Config.pillHeight, bigHeight) + (win.osdStrip ? win.osdStripHeight : 0) : Config.pillHeight
             radius: win.expanded ? Config.expandedRadius : Math.min(Config.pillRadius, height / 2)
@@ -192,11 +214,22 @@ PanelWindow {
                 radius: pill.radius
             }
 
-            y: win.open ? Config.topMargin : -height - 2
+            // Position relative to the hitbox: resting spot when open, just past
+            // the screen edge when hidden.
+            x: (win.open ? win.restX : win.hiddenX) - hitbox.x
+            y: (win.open ? win.restY : win.hiddenY) - hitbox.y
             // Don't draw anything while fully hidden.
-            visible: y > -height
+            visible: win.open || Math.abs(x - (win.hiddenX - hitbox.x)) > 1 || Math.abs(y - (win.hiddenY - hitbox.y)) > 1
 
+            Behavior on x {
+                enabled: win.onSide
+                NumberAnimation {
+                    duration: Config.animDuration
+                    easing.type: Easing.OutCubic
+                }
+            }
             Behavior on y {
+                enabled: !win.onSide
                 NumberAnimation {
                     duration: Config.animDuration
                     easing.type: Easing.OutCubic

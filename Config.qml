@@ -31,7 +31,10 @@ Singleton {
     readonly property int pillRadius: get("pill.radius", 19)
     readonly property int pillPadding: get("pill.padding", 14)
     readonly property int pillSpacing: get("pill.spacing", 14)
-    readonly property int topMargin: get("pill.topMargin", 6)
+    readonly property int topMargin: get("pill.topMargin", 6)   // gap from the screen edge the pill is on
+    readonly property int edgeMargin: get("pill.edgeMargin", 12) // gap from the side when in a corner
+    // "top", "top-left", "top-right", "bottom", "bottom-left", "bottom-right", "left", "right"
+    readonly property string position: get("pill.position", "top")
     readonly property string idleMode: get("pill.idleMode", "tiny") // "tiny" or "hidden"
     readonly property int triggerWidth: get("pill.triggerWidth", 420)
     readonly property int triggerHeight: Math.max(1, get("pill.triggerHeight", 3))

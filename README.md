@@ -243,7 +243,7 @@ After installing, press **Restart ArchPill** in the same settings section.
 
 | To… | Do this |
 |---|---|
-| Show the pill | Move the mouse to the top-middle edge of the screen |
+| Show the pill | Move the mouse to the screen edge where the pill lives (top-middle by default; change it in Settings → Behaviour → Position) |
 | Open the music player | Click the song in the pill |
 | Open the control centre | Click the sliders icon, or an empty part of the pill |
 | Change volume | Scroll over the volume in the pill; click it to mute |
@@ -263,7 +263,7 @@ centre):
 | **Control Centre** | Widgets and their order, the widget catalogue (search + categories), app tiles, your own buttons |
 | **Pill** (extra) | A live preview of your pill sits at the top while you edit. Separators (dot, line, space, wide space) can be added as many times as you like |
 | **Appearance** | Themes, style (solid / liquid glass / black + glass edges / tinted glass), every colour, opacity, size, corner radius, padding, font (browse every installed font, or press *Get more fonts* for a free font pack), text size, animation speed |
-| **Behaviour** | Always show or hover, hover area, delays, what a click does, volume popup, layer, screens |
+| **Behaviour** | **Position** (top, top-left, top-right, left/right side, bottom, bottom-left, bottom-right), always show or hover, hover area, delays, what a click does, volume popup, layer, screens |
 | **Music & More** | Preferred / ignored music players, volume step, max volume, battery warning, weather location, dark/light schemes, terminal |
 | **Shortcuts & Reset** | Copy-paste shortcut commands, welcome tour, open the settings file, reset everything |
 

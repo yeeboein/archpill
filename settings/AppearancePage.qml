@@ -303,7 +303,7 @@ Column {
             }
         }
         SettingRow {
-            label: "Gap from top of screen"
+            label: "Gap from the screen edge"
             NumberSlider {
                 from: 0
                 to: 40

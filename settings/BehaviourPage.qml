@@ -11,10 +11,97 @@ Column {
     spacing: 22
 
     Section {
+        title: "Position"
+        note: "Where the pill sits. It slides in from that edge, and the music player / control centre open towards the middle of the screen."
+        Item {
+            width: parent.width
+            height: 190
+            // A little screen with 8 spots to click.
+            Rectangle {
+                id: screenBox
+                anchors.horizontalCenter: parent.horizontalCenter
+                y: 10
+                width: 280
+                height: 170
+                radius: 12
+                gradient: Gradient {
+                    GradientStop {
+                        position: 0
+                        color: "#4a63b8"
+                    }
+                    GradientStop {
+                        position: 1
+                        color: "#b56b9e"
+                    }
+                }
+                border.width: 3
+                border.color: Qt.rgba(Config.foreground.r, Config.foreground.g, Config.foreground.b, 0.25)
+
+                Repeater {
+                    model: [
+                        { pos: "top-left", x: 0, y: 0 }, { pos: "top", x: 1, y: 0 }, { pos: "top-right", x: 2, y: 0 },
+                        { pos: "left", x: 0, y: 1 }, { pos: "right", x: 2, y: 1 },
+                        { pos: "bottom-left", x: 0, y: 2 }, { pos: "bottom", x: 1, y: 2 }, { pos: "bottom-right", x: 2, y: 2 }
+                    ]
+                    delegate: Rectangle {
+                        required property var modelData
+                        readonly property bool current: Config.position === modelData.pos
+                        readonly property bool vertical: modelData.pos === "left" || modelData.pos === "right"
+                        width: vertical ? 14 : 56
+                        height: vertical ? 40 : 14
+                        radius: 7
+                        x: modelData.x === 0 ? 10 : modelData.x === 2 ? screenBox.width - width - 10 : (screenBox.width - width) / 2
+                        y: modelData.y === 0 ? 10 : modelData.y === 2 ? screenBox.height - height - 10 : (screenBox.height - height) / 2
+                        color: current ? Config.accent : pm.containsMouse ? Qt.rgba(1, 1, 1, 0.6) : Qt.rgba(0, 0, 0, 0.45)
+                        border.width: 1
+                        border.color: Qt.rgba(1, 1, 1, 0.5)
+                        MouseArea {
+                            id: pm
+                            anchors.fill: parent
+                            anchors.margins: -6
+                            hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: Config.setValue("pill.position", modelData.pos)
+                        }
+                    }
+                }
+                PillText {
+                    anchors.centerIn: parent
+                    text: ({ "top": "Top", "top-left": "Top left", "top-right": "Top right", "bottom": "Bottom", "bottom-left": "Bottom left", "bottom-right": "Bottom right", "left": "Left side", "right": "Right side" })[Config.position] || Config.position
+                    color: "#ffffff"
+                    font.weight: Font.DemiBold
+                }
+            }
+        }
+        SettingRow {
+            label: "Gap from the screen edge"
+            NumberSlider {
+                from: 0
+                to: 60
+                suffix: " px"
+                value: Config.topMargin
+                onMoved: v => Config.setValue("pill.topMargin", v)
+            }
+        }
+        SettingRow {
+            visible: Config.position.indexOf("-") !== -1
+            label: "Gap from the side (corners)"
+            NumberSlider {
+                from: 0
+                to: 200
+                step: 2
+                suffix: " px"
+                value: Config.edgeMargin
+                onMoved: v => Config.setValue("pill.edgeMargin", v)
+            }
+        }
+    }
+
+    Section {
         title: "Showing & hiding"
         SettingRow {
             label: "Always show the pill"
-            description: "Off = it hides and slides down when you touch the top edge"
+            description: "Off = it hides until you touch the screen edge where it lives"
             Toggle {
                 checked: Config.alwaysOpen
                 onToggled: v => Config.setValue("pill.alwaysOpen", v)
@@ -29,8 +116,8 @@ Column {
             }
         }
         SettingRow {
-            label: "Hover area width"
-            description: "How wide the strip at the top edge is"
+            label: "Hover area length"
+            description: "How long the strip along the screen edge is"
             NumberSlider {
                 from: 60
                 to: 1600
@@ -41,7 +128,7 @@ Column {
             }
         }
         SettingRow {
-            label: "Hover area height"
+            label: "Hover area thickness"
             NumberSlider {
                 from: 1
                 to: 20
