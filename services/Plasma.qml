@@ -24,6 +24,7 @@ Singleton {
         const marker = Config.configDir + "/.plasma-volume-osd-off";
         const v = on ? "true" : "false";
         const write = k => "kwriteconfig6 --notify --file plasmaparc --group General --key " + k + " " + v;
+        verifyTimer.restart(); // re-read the real value so the button shows what actually happened
         Quickshell.execDetached(["sh", "-c", write("VolumeOsd") + " && " + write("MuteOsd") + (on ? " && rm -f \"$1\"" : " && mkdir -p \"$(dirname \"$1\")\" && touch \"$1\""), "sh", marker]);
     }
 
@@ -64,6 +65,12 @@ Singleton {
     Process {
         running: root.caffeine
         command: ["systemd-inhibit", "--what=idle:sleep", "--who=ArchPill", "--why=Stay awake is on", "--mode=block", "sleep", "infinity"]
+    }
+
+    Timer {
+        id: verifyTimer
+        interval: 1200
+        onTriggered: root.refresh()
     }
 
     Component.onCompleted: refresh()
