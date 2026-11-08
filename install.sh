@@ -46,24 +46,78 @@ die()  { printf '\033[1;31merror:\033[0m %s\n' "$*"; exit 1; }
 command -v pacman >/dev/null || die "pacman not found - this script is for Arch Linux."
 
 # ---- extra fonts (./install.sh --fonts) --------------------------------------
-# A pack of free fonts from the official repos. Names that don't exist in your
-# repos are skipped, so one missing package doesn't stop the rest.
-FONT_PACKAGES=(inter-font ttf-jetbrains-mono ttf-fira-sans ttf-fira-code ttf-fira-mono
-    ttf-roboto ttf-roboto-mono ttf-ubuntu-font-family ttf-opensans cantarell-fonts
-    adobe-source-sans-fonts adobe-source-serif-fonts adobe-source-code-pro-fonts
-    ttf-ibm-plex ttf-hack ttf-cascadia-code ttf-liberation ttf-dejavu ttf-croscore
-    ttf-anonymous-pro ttf-inconsolata ttf-iosevka-nerd ttf-nerd-fonts-symbols
-    otf-monaspace ttf-lato ttf-bitstream-vera gnu-free-fonts ttf-caladea ttf-carlito
-    otf-libertinus tex-gyre-fonts ttf-junicode noto-fonts noto-fonts-emoji)
+# A big pack of free fonts. Names that don't exist are skipped, so one
+# missing package doesn't stop the rest.
+FONT_PACKAGES=(
+    # everyday sans / serif
+    inter-font ttf-roboto ttf-opensans ttf-ubuntu-font-family cantarell-fonts ttf-lato
+    ttf-fira-sans adobe-source-sans-fonts adobe-source-serif-fonts ttf-ibm-plex
+    ttf-liberation ttf-dejavu ttf-croscore ttf-droid ttf-bitstream-vera gnu-free-fonts
+    ttf-caladea ttf-carlito otf-libertinus ttf-linux-libertine tex-gyre-fonts ttf-junicode
+    ttf-gentium-plus otf-overpass otf-latin-modern noto-fonts noto-fonts-extra noto-fonts-emoji
+    # JetBrains Mono (all versions) and other coding fonts
+    ttf-jetbrains-mono ttf-jetbrains-mono-nerd ttf-fira-code ttf-fira-mono ttf-roboto-mono
+    adobe-source-code-pro-fonts ttf-hack ttf-cascadia-code otf-cascadia-code ttf-inconsolata
+    ttf-anonymous-pro otf-monaspace ttf-iosevka-nerd terminus-font
+    # Nerd Fonts (coding fonts with icons built in)
+    ttf-nerd-fonts-symbols ttf-nerd-fonts-symbols-mono ttf-firacode-nerd ttf-hack-nerd
+    ttf-meslo-nerd ttf-sourcecodepro-nerd ttf-ubuntu-nerd ttf-ubuntu-mono-nerd ttf-dejavu-nerd
+    ttf-cascadia-code-nerd ttf-cascadia-mono-nerd ttf-victor-mono-nerd ttf-mononoki-nerd
+    ttf-iosevkaterm-nerd ttf-terminus-nerd ttf-agave-nerd ttf-arimo-nerd ttf-cousine-nerd
+    ttf-noto-nerd ttf-roboto-mono-nerd ttf-space-mono-nerd ttf-go-nerd ttf-lilex-nerd
+    ttf-martian-mono-nerd ttf-monofur-nerd ttf-monoid-nerd ttf-mplus-nerd ttf-profont-nerd
+    ttf-sharetech-mono-nerd ttf-tinos-nerd ttf-bitstream-vera-mono-nerd ttf-liberation-mono-nerd
+    otf-aurulent-nerd otf-codenewroman-nerd otf-firamono-nerd otf-geist-mono-nerd
+    otf-hasklig-nerd otf-hermit-nerd otf-overpass-nerd otf-droid-nerd
+    # fun & friendly (Comic Shanns, OpenDyslexic)
+    otf-comicshanns-nerd otf-opendyslexic-nerd
+    # symbols & dingbats (free Wingdings-style fonts)
+    urw-base35-fonts gsfonts otf-font-awesome ttf-font-awesome ttf-joypixels
+)
+# From the AUR (needs yay or paru): Comic Sans MS + Webdings + Impact, Arial,
+# Times New Roman, Georgia, Verdana... (ttf-ms-fonts), more comic and
+# Wingdings-style fonts, and popular Google fonts.
+AUR_FONT_PACKAGES=(
+    ttf-ms-fonts ttf-comic-neue ttf-comic-mono-git otf-comicshanns ttf-symbola
+    ttf-material-design-icons-desktop-git ttf-poppins ttf-montserrat ttf-raleway
+    ttf-oswald ttf-nunito ttf-quicksand ttf-lexend ttf-work-sans ttf-manrope
+    ttf-merriweather ttf-playfair-display ttf-bebas-neue ttf-space-grotesk ttf-rubik
+    ttf-karla ttf-barlow ttf-josefin-sans ttf-pacifico ttf-lobster ttf-dm-sans
+    ttf-outfit ttf-archivo ttf-mulish ttf-atkinson-hyperlegible ttf-borg-sans-mono
+)
 if [[ $FONTS_ONLY -eq 1 ]]; then
+    say "Looking up ${#FONT_PACKAGES[@]} font packages in your repos…"
     available=()
     for p in "${FONT_PACKAGES[@]}"; do
         pacman -Si "$p" >/dev/null 2>&1 && available+=("$p")
     done
-    say "Installing ${#available[@]} font packages"
-    sudo pacman -S --needed "${available[@]}"
+    say "Installing ${#available[@]} font packages from the official repos"
+    sudo pacman -S --needed "${available[@]}" || warn "Some fonts failed to install."
+
+    helper="$(command -v paru || command -v yay || true)"
+    if [[ -n "$helper" ]]; then
+        say "Looking up ${#AUR_FONT_PACKAGES[@]} font packages in the AUR (Comic Sans, Webdings, Google fonts…)"
+        aur=()
+        for p in "${AUR_FONT_PACKAGES[@]}"; do
+            pacman -Qq "$p" >/dev/null 2>&1 && continue
+            "$helper" -Si "$p" >/dev/null 2>&1 && aur+=("$p")
+        done
+        if [[ ${#aur[@]} -gt 0 ]]; then
+            say "Installing ${#aur[@]} AUR font packages"
+            "$helper" -S --needed "${aur[@]}" || warn "Some AUR fonts failed to install."
+        fi
+    else
+        warn "No AUR helper (yay/paru) found, so Comic Sans, Webdings and the Google fonts were skipped."
+        echo "  Install yay, then run ./install.sh --fonts again:"
+        echo "    sudo pacman -S --needed git base-devel"
+        echo "    git clone https://aur.archlinux.org/yay-bin.git && cd yay-bin && makepkg -si"
+    fi
+
+    echo
+    echo "Note: Wingdings itself is a Windows-only font and can't be downloaded freely."
+    echo "You now have Webdings and free symbol fonts instead (Dingbats, Symbola, Font Awesome, Noto Symbols, Nerd Font symbols)."
     fc-cache -f >/dev/null 2>&1 || true
-    say "Fonts installed. Restart ArchPill to see them: qs kill -c archpill; QS_APP_ID=archpill qs -c archpill -n -d"
+    say "Fonts installed. Restart ArchPill (Settings → Appearance → Restart ArchPill) to see them."
     exit 0
 fi
 

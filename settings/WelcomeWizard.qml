@@ -159,15 +159,13 @@ FloatingWindow {
         id: welcomeStep
         Column {
             spacing: 18
-            Rectangle {
+            Item {
                 anchors.horizontalCenter: parent.horizontalCenter
                 width: 140
                 height: 140
-                radius: 32
-                color: "#ffffff"
                 Image {
                     anchors.fill: parent
-                    anchors.margins: 6
+                    anchors.margins: 0
                     source: Qt.resolvedUrl("../assets/logo.png")
                     sourceSize: Qt.size(280, 280)
                     fillMode: Image.PreserveAspectFit

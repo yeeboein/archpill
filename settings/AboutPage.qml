@@ -25,14 +25,12 @@ Column {
 
     Row {
         spacing: 16
-        Rectangle {
+        Item {
             width: 96
             height: 96
-            radius: 22
-            color: "#ffffff"
             Image {
                 anchors.fill: parent
-                anchors.margins: 4
+                anchors.margins: 0
                 source: Qt.resolvedUrl("../assets/logo.png")
                 sourceSize: Qt.size(192, 192)
                 fillMode: Image.PreserveAspectFit

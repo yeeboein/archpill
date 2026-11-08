@@ -15,11 +15,15 @@ Column {
     property string kind: "all"
     readonly property var allFonts: Qt.fontFamilies()
 
-    readonly property var popular: ["Inter", "Noto Sans", "Roboto", "Open Sans", "Ubuntu", "Fira Sans", "Source Sans 3", "IBM Plex Sans", "Cantarell", "Lato", "DejaVu Sans", "Liberation Sans", "JetBrains Mono", "Fira Code", "Cascadia Code", "Hack", "Iosevka", "Source Serif 4", "Noto Serif", "IBM Plex Serif"]
+    readonly property var popular: ["Inter", "Noto Sans", "Roboto", "Open Sans", "Ubuntu", "Fira Sans", "Source Sans 3", "IBM Plex Sans", "Cantarell", "Lato", "Poppins", "Montserrat", "Nunito", "Quicksand", "Lexend", "DejaVu Sans", "Arial", "Verdana", "Georgia", "Times New Roman", "Impact", "Comic Sans MS", "Comic Neue", "Comic Shanns", "Comic Mono", "OpenDyslexic", "JetBrains Mono", "JetBrains Mono NL", "JetBrainsMono Nerd Font", "Fira Code", "Cascadia Code", "Hack", "Iosevka", "Source Serif 4", "Noto Serif", "IBM Plex Serif", "Playfair Display", "Pacifico", "Lobster", "Bebas Neue", "Webdings", "D050000L", "Symbola", "Font Awesome 6 Free"]
     readonly property var popularInstalled: popular.filter(f => allFonts.indexOf(f) !== -1)
 
     function kindOf(f) {
         const n = f.toLowerCase();
+        if (/dings|dingbat|d050000l|symbol|awesome|emoji|icons|material design|joypixels|wingding/.test(n))
+            return "symbols";
+        if (/comic|opendyslexic|pacifico|lobster|bebas|marker|chalk|brush|script|hand|creep|bangers|impact/.test(n))
+            return "fun";
         if (/mono|code|consol|courier|hack|iosevka|inconsolata|cascadia|terminal|fixed/.test(n))
             return "mono";
         if (/serif/.test(n) && !/sans/.test(n))
@@ -77,21 +81,16 @@ Column {
     }
 
     // Search + filter
-    Row {
+    TextBox {
         width: parent.width
-        spacing: 8
-        TextBox {
-            width: parent.width - kinds.width - 8
-            placeholder: "Search " + root.allFonts.length + " fonts…"
-            onEdited: t => root.search = t.toLowerCase()
-        }
-        Choice {
-            id: kinds
-            width: 250
-            options: [{ label: "All", value: "all" }, { label: "Sans", value: "sans" }, { label: "Serif", value: "serif" }, { label: "Mono", value: "mono" }]
-            current: root.kind
-            onPicked: v => root.kind = v
-        }
+        placeholder: "Search " + root.allFonts.length + " fonts…"
+        onEdited: t => root.search = t.toLowerCase()
+    }
+    Choice {
+        width: parent.width
+        options: [{ label: "All", value: "all" }, { label: "Sans", value: "sans" }, { label: "Serif", value: "serif" }, { label: "Mono", value: "mono" }, { label: "Fun", value: "fun" }, { label: "Symbols", value: "symbols" }]
+        current: root.kind
+        onPicked: v => root.kind = v
     }
 
     // Every font, previewed in itself (only visible rows are drawn).
@@ -172,8 +171,8 @@ Column {
     PillText {
         width: parent.width
         wrapMode: Text.Wrap
-        maximumLineCount: 3
-        text: "\"Get more fonts\" opens a terminal and installs a pack of free fonts (Inter, JetBrains Mono, Fira, Roboto, IBM Plex, Ubuntu, Hack, Cascadia and more). It asks for your password. Then press Restart ArchPill."
+        maximumLineCount: 6
+        text: "\"Get more fonts\" opens a terminal and installs 100+ font packages: every JetBrains Mono, dozens of Nerd Fonts, Inter, Roboto, IBM Plex, OpenDyslexic, Comic Shanns, symbol fonts, and with yay/paru also Comic Sans, Webdings, Arial, Impact and popular Google fonts. It asks for your password. Then press Restart ArchPill. (Wingdings itself is Windows-only; Webdings and free symbol fonts are included instead.)"
         color: Config.subtle
         sizeFactor: 0.85
     }

@@ -49,6 +49,7 @@ That's it. Everything below is the detailed version.
 - [What it can do](#what-it-can-do)
 - [Install (detailed)](#install-detailed)
 - [Update](#update)
+- [Fonts](#fonts)
 - [Using ArchPill](#using-archpill)
 - [Customising](#customising)
 - [Volume popup & Plasma's popup](#volume-popup--plasmas-popup)
@@ -146,7 +147,7 @@ Options:
 | `./install.sh --no-autostart` | Don't start ArchPill when you log in |
 | `./install.sh --reset-config` | Back up your settings and start fresh |
 | `./install.sh --no-start` | Don't start ArchPill at the end |
-| `./install.sh --fonts` | Only install a pack of extra free fonts |
+| `./install.sh --fonts` | Only install the big font pack (100+ font packages, see below) |
 
 ## Update
 
@@ -170,6 +171,29 @@ git pull
 
 Your settings are kept. If an update fails, the details are in
 `~/.cache/archpill-update.log`.
+
+## Fonts
+
+ArchPill can use any font on your computer (Settings → Appearance → Text).
+For lots more, press **Get more fonts** there, or run:
+
+```bash
+cd ~/archpill && ./install.sh --fonts
+```
+
+It installs, from the official repos: every JetBrains Mono (normal, NL, Nerd
+Font), dozens of Nerd Fonts, Inter, Roboto, Open Sans, Ubuntu, Lato, IBM Plex,
+Fira, Source Sans/Serif/Code, Noto, Cascadia, Iosevka, Monaspace, OpenDyslexic,
+Comic Shanns and symbol fonts (Dingbats, Font Awesome, JoyPixels…).
+If you have `yay` or `paru` it also installs from the AUR: **Comic Sans MS**,
+**Webdings**, Arial, Impact, Times New Roman, Georgia, Verdana, Comic Neue,
+Comic Mono, Symbola and popular Google fonts (Poppins, Montserrat, Nunito,
+Pacifico, Lobster, Bebas Neue…).
+
+> Wingdings is a Windows-only font and can't be downloaded freely, so you get
+> Webdings and free symbol fonts instead.
+
+After installing, press **Restart ArchPill** in the same settings section.
 
 ## Using ArchPill
 

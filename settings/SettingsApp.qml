@@ -51,15 +51,13 @@ FloatingWindow {
                 leftPadding: 6
                 bottomPadding: 14
                 // ArchPill logo (only used here and as the app icon, never on the pill)
-                Rectangle {
+                Item {
                     width: 40
                     height: 40
-                    radius: 10
                     anchors.verticalCenter: parent.verticalCenter
-                    color: "#ffffff"
                     Image {
                         anchors.fill: parent
-                        anchors.margins: 2
+                        anchors.margins: 0
                         source: Qt.resolvedUrl("../assets/logo.png")
                         sourceSize: Qt.size(80, 80)
                         fillMode: Image.PreserveAspectFit
