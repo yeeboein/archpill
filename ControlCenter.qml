@@ -15,31 +15,46 @@ Item {
 
     implicitHeight: col.implicitHeight
 
-    function componentFor(id) {
-        switch (id) {
-        case "wifi":
-            return wifiW;
-        case "bluetooth":
-            return bluetoothW;
-        case "dnd":
-            return dndW;
-        case "mic":
-            return micW;
-        case "volume":
-            return volumeW;
-        case "brightness":
-            return brightnessW;
-        case "media":
-            return mediaW;
-        case "battery":
-            return batteryW;
-        case "clock":
-            return clockW;
-        case "power":
-            return powerW;
-        }
-        console.warn("[archpill] unknown control centre widget: \"" + id + "\"");
-        return null;
+    // id -> widget. Simple buttons (actions, apps, your own buttons)
+    // all use ActionTile.
+    readonly property var table: ({
+            "wifi": wifiW,
+            "bluetooth": bluetoothW,
+            "airplane": airplaneW,
+            "dnd": dndW,
+            "mic": micW,
+            "nightlight": nightW,
+            "darkmode": darkW,
+            "caffeine": caffeineW,
+            "volume": volumeW,
+            "micvolume": micVolumeW,
+            "output": outputW,
+            "mixer": mixerW,
+            "brightness": brightnessW,
+            "media": mediaW,
+            "playpause": playPauseW,
+            "nexttrack": nextTrackW,
+            "battery": batteryW,
+            "clock": clockW,
+            "calendar": calendarW,
+            "weather": weatherW,
+            "stats": statsW,
+            "sysinfo": sysinfoW,
+            "timer": timerW,
+            "clipboard": clipboardW,
+            "power": powerW,
+            "archpillsettings": settingsW
+        })
+
+    function componentFor(id, info) {
+        if (!info)
+            return null;
+        if (info.action || info.app || info.custom)
+            return actionW;
+        const c = table[id];
+        if (!c)
+            console.warn("[archpill] unknown control centre widget: \"" + id + "\"");
+        return c || null;
     }
 
     // ---- editing the widget list (saved to config.json) ---------------------
@@ -64,18 +79,36 @@ Item {
     function add(id) {
         save(list.concat([id]));
     }
-    readonly property var notAdded: WidgetRegistry.all.filter(w => list.indexOf(w.id) === -1)
+    property string category: WidgetRegistry.categories[0]
+    readonly property var notAdded: WidgetRegistry.inCategory(category).filter(w => list.indexOf(w.id) === -1)
 
     Component { id: wifiW; W.WifiTile {} }
     Component { id: bluetoothW; W.BluetoothTile {} }
+    Component { id: airplaneW; W.AirplaneTile {} }
     Component { id: dndW; W.DndTile {} }
     Component { id: micW; W.MicTile {} }
+    Component { id: nightW; W.NightLightTile {} }
+    Component { id: darkW; W.DarkModeTile {} }
+    Component { id: caffeineW; W.CaffeineTile {} }
     Component { id: volumeW; W.VolumeSlider {} }
+    Component { id: micVolumeW; W.MicVolumeSlider {} }
+    Component { id: outputW; W.OutputCard {} }
+    Component { id: mixerW; W.MixerCard {} }
     Component { id: brightnessW; W.BrightnessSlider {} }
     Component { id: mediaW; W.MediaCard {} }
+    Component { id: playPauseW; W.PlayPauseTile {} }
+    Component { id: nextTrackW; W.NextTrackTile {} }
     Component { id: batteryW; W.BatteryCard {} }
     Component { id: clockW; W.ClockCard {} }
+    Component { id: calendarW; W.CalendarCard {} }
+    Component { id: weatherW; W.WeatherCard {} }
+    Component { id: statsW; W.StatsCard {} }
+    Component { id: sysinfoW; W.SysInfoCard {} }
+    Component { id: timerW; W.TimerCard {} }
+    Component { id: clipboardW; W.ClipboardCard {} }
     Component { id: powerW; W.PowerCard {} }
+    Component { id: settingsW; W.SettingsTile {} }
+    Component { id: actionW; W.ActionTile {} }
 
     Column {
         id: col
@@ -92,12 +125,24 @@ Item {
                 font.weight: Font.Bold
                 sizeFactor: 1.2
             }
-            IconButton {
+            Row {
                 anchors.right: parent.right
                 anchors.verticalCenter: parent.verticalCenter
-                icon: PillState.editing ? "check" : "edit"
-                size: 16
-                onClicked: PillState.editing = !PillState.editing
+                spacing: 2
+                // Opens the ArchPill settings app.
+                IconButton {
+                    icon: "palette"
+                    size: 16
+                    onClicked: {
+                        PillState.close();
+                        PillState.settingsOpen = true;
+                    }
+                }
+                IconButton {
+                    icon: PillState.editing ? "check" : "edit"
+                    size: 16
+                    onClicked: PillState.editing = !PillState.editing
+                }
             }
         }
 
@@ -114,7 +159,7 @@ Item {
                     required property var modelData
                     required property int index
                     readonly property var info: WidgetRegistry.info(modelData)
-                    readonly property bool wide: !info || info.wide
+                    readonly property bool wide: !info || !!info.wide
 
                     visible: !!info
                     width: wide ? flow.width : (flow.width - root.gap) / 2
@@ -123,8 +168,9 @@ Item {
                     Loader {
                         id: loader
                         width: parent.width
-                        sourceComponent: slot.info ? root.componentFor(slot.modelData) : null
+                        sourceComponent: root.componentFor(slot.modelData, slot.info)
                         enabled: !PillState.editing
+                        onLoaded: if ("info" in item) item.info = Qt.binding(() => slot.info)
                     }
 
                     // Edit overlay: move left/right and remove.
@@ -184,9 +230,45 @@ Item {
             spacing: 8
 
             PillText {
-                text: root.notAdded.length > 0 ? "Add widgets" : "All widgets are added"
+                text: "Add widgets"
                 color: Config.subtle
                 sizeFactor: 0.9
+            }
+            // Category picker
+            Flow {
+                width: parent.width
+                spacing: 4
+                Repeater {
+                    model: WidgetRegistry.categories
+                    delegate: Rectangle {
+                        required property var modelData
+                        readonly property bool current: root.category === modelData
+                        width: catText.implicitWidth + 16
+                        height: 24
+                        radius: 12
+                        color: current ? Config.foreground : "transparent"
+                        border.width: current ? 0 : 1
+                        border.color: Qt.rgba(Config.foreground.r, Config.foreground.g, Config.foreground.b, 0.2)
+                        PillText {
+                            id: catText
+                            anchors.centerIn: parent
+                            text: modelData
+                            sizeFactor: 0.8
+                            color: parent.current ? Config.background : Config.foreground
+                        }
+                        MouseArea {
+                            anchors.fill: parent
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: root.category = modelData
+                        }
+                    }
+                }
+            }
+            PillText {
+                visible: root.notAdded.length === 0
+                text: "Everything in " + root.category + " is already added"
+                color: Config.subtle
+                sizeFactor: 0.85
             }
             Flow {
                 width: parent.width
@@ -224,6 +306,14 @@ Item {
                         }
                     }
                 }
+            }
+            PillText {
+                width: parent.width
+                wrapMode: Text.Wrap
+                maximumLineCount: 3
+                text: "Want an app or your own button? Open ArchPill Settings (palette button) → Control Centre."
+                color: Config.subtle
+                sizeFactor: 0.8
             }
             Rectangle {
                 width: resetText.implicitWidth + 24

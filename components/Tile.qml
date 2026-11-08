@@ -7,6 +7,8 @@ Rectangle {
     id: root
 
     property string icon: ""
+    // Optional picture instead of a built-in icon (used for app icons).
+    property string imageSource: ""
     property string title: ""
     property string subtitle: ""
     property bool active: false
@@ -27,9 +29,19 @@ Rectangle {
         color: root.active ? Config.accent : Qt.rgba(Config.foreground.r, Config.foreground.g, Config.foreground.b, 0.14)
         Icon {
             anchors.centerIn: parent
+            visible: root.imageSource === ""
             size: 18
             name: root.icon
             color: root.active ? "#ffffff" : Config.foreground
+        }
+        Image {
+            anchors.centerIn: parent
+            visible: root.imageSource !== ""
+            width: 24
+            height: 24
+            sourceSize: Qt.size(48, 48)
+            source: root.imageSource
+            asynchronous: true
         }
     }
 

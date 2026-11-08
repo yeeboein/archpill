@@ -19,6 +19,8 @@ Singleton {
     property bool editing: false
     // Do Not Disturb (silences ArchPill notifications once they exist).
     property bool dnd: false
+    // The settings app window.
+    property bool settingsOpen: false
 
     function open(mode, screen) {
         screenName = screen || "";

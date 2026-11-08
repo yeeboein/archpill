@@ -20,21 +20,27 @@ qs -c archpill -n -d
 
 Move the mouse to the top-centre edge of the screen.
 
-## Configure
+## Customise it
 
-Edit `~/.config/archpill/config.json`. Changes apply as soon as you save.
-Only keep the settings you want to change; anything missing falls back to
-`config.default.json`. Choose modules and their order with `pill.modules`:
+Open **ArchPill Settings**: click the palette button at the top of the control
+centre, or run `qs -c archpill ipc call archpill openSettings`. In there you can:
 
-```json
-{ "pill": { "modules": ["media", "clock", "volume", "battery"] } }
-```
+- **Pill**: drag modules into any order, add/remove them (clock, now playing,
+  volume, battery, control-centre button, Wi-Fi, Bluetooth, mic, weather,
+  separator) and set their options
+- **Control Centre**: drag widgets into any order, pick from 50+ built-in
+  widgets, add **any installed app** as a tile, or make **your own buttons**
+  (open a website, a folder, or run any command)
+- **Appearance**: 12 themes, every colour, opacity, sizes, corner radius,
+  font, text size, animation speed
+- **Behaviour**: always-on or hover, hover area, delays, what a click does,
+  layer, which screens
+- **Music & More**: preferred player, ignored players, volume step, weather
+  location, dark/light schemes
+- **Shortcuts & Reset**: copy-paste commands for keyboard shortcuts, reset
 
-Available modules: `clock`, `media`, `volume`, `battery`, `control` (control centre button).
-
-Click the song in the pill for the big music dropdown. Click the sliders
-button (or an empty part of the pill) for the control centre; press the pencil
-there to add, remove and reorder widgets.
+Everything applies instantly and is saved to `~/.config/archpill/config.json`
+(only the settings you change are stored there).
 
 ## Commands
 
@@ -42,6 +48,7 @@ there to add, remove and reorder widgets.
 qs -c archpill ipc call archpill toggle      # keep the pill open / let it hide
 qs -c archpill ipc call archpill toggleControlCenter
 qs -c archpill ipc call archpill toggleMedia
+qs -c archpill ipc call archpill openSettings
 qs -c archpill ipc call archpill playPause
 qs -c archpill ipc call archpill next
 qs -c archpill ipc call archpill previous

@@ -5,6 +5,7 @@ import Quickshell
 import Quickshell.Io
 import qs
 import qs.services
+import qs.settings
 
 ShellRoot {
     id: root
@@ -26,6 +27,12 @@ ShellRoot {
     Variants {
         model: root.pickScreens(Config.monitor)
         Pill {}
+    }
+
+    // The settings app window, only created while it's open.
+    LazyLoader {
+        active: PillState.settingsOpen
+        SettingsApp {}
     }
 
     // Commands you can run from a terminal or bind to a key, e.g.
@@ -52,6 +59,13 @@ ShellRoot {
         }
         function close(): void {
             PillState.close();
+        }
+        // Open / close the ArchPill settings app.
+        function openSettings(): void {
+            PillState.settingsOpen = true;
+        }
+        function closeSettings(): void {
+            PillState.settingsOpen = false;
         }
         // Re-read ~/.config/archpill/config.json (normally automatic).
         function reloadConfig(): void {

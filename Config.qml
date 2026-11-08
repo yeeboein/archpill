@@ -41,6 +41,9 @@ Singleton {
     readonly property string monitor: get("pill.monitor", "")
     // What a click on an empty part of the pill opens: "control", "media" or "none".
     readonly property string clickAction: get("pill.clickAction", "control")
+    // Keep the pill visible all the time instead of hover-to-reveal.
+    readonly property bool alwaysOpen: get("pill.alwaysOpen", false)
+    readonly property bool networkShowName: get("network.showName", true)
 
     // ---- Expanded views (music dropdown, control centre) -------------------
     readonly property int mediaWidth: get("expanded.mediaWidth", 400)
@@ -85,6 +88,14 @@ Singleton {
     readonly property int batteryLow: get("battery.lowThreshold", 20)
 
     readonly property var controlWidgets: get("controlCenter.widgets", ["wifi", "bluetooth", "dnd", "mic", "volume", "brightness", "media", "battery"])
+    // Your own buttons: [{ "id": "c1", "name": "Reddit", "icon": "web", "command": "xdg-open https://reddit.com" }]
+    readonly property var customButtons: get("controlCenter.customButtons", [])
+
+    readonly property string weatherLocation: get("weather.location", "")
+    readonly property string weatherUnits: get("weather.units", "m") // "m" metric, "u" US
+    readonly property string darkScheme: get("theme.darkScheme", "BreezeDark")
+    readonly property string lightScheme: get("theme.lightScheme", "BreezeLight")
+    readonly property string terminal: get("apps.terminal", "konsole")
 
     // ---- Helpers ------------------------------------------------------------
 
@@ -138,8 +149,40 @@ Singleton {
             node = node[parts[i]];
         }
         node[parts[parts.length - 1]] = value;
-        root.user = u; // update right away, the file watcher confirms it
-        userFile.setText(JSON.stringify(u, null, 2) + "\n");
+        root.user = u; // apply right away
+        saveTimer.restart(); // write to disk shortly after (sliders change a lot)
+    }
+
+    // Remove one of your settings so the default is used again.
+    function resetValue(path) {
+        const u = JSON.parse(JSON.stringify(root.user || {}));
+        const parts = path.split(".");
+        let node = u;
+        for (let i = 0; i < parts.length - 1; i++) {
+            node = node[parts[i]];
+            if (typeof node !== "object" || node === null)
+                return;
+        }
+        delete node[parts[parts.length - 1]];
+        root.user = u;
+        saveTimer.restart();
+    }
+
+    // Forget all your settings (back to config.default.json).
+    function resetAll() {
+        root.user = {};
+        saveTimer.restart();
+    }
+
+    function saveNow() {
+        saveTimer.stop();
+        userFile.setText(JSON.stringify(root.user, null, 2) + "\n");
+    }
+
+    Timer {
+        id: saveTimer
+        interval: 250
+        onTriggered: root.saveNow()
     }
 
     function reload() {
@@ -163,7 +206,7 @@ Singleton {
         path: root.userPath
         blockLoading: true
         watchChanges: true
-        onFileChanged: reload()
+        onFileChanged: if (!saveTimer.running) reload()
         onLoaded: {
             const obj = root.parse(text(), root.userPath);
             if (obj !== null) {

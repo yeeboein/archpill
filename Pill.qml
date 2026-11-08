@@ -57,7 +57,7 @@ PanelWindow {
     // ---- reveal logic -------------------------------------------------------
     readonly property bool hovering: pillHover.hovered || triggerHover.hovered
     property bool revealed: false
-    readonly property bool open: revealed || PillState.pinned || expanded
+    readonly property bool open: revealed || PillState.pinned || expanded || PillState.settingsOpen || Config.alwaysOpen
 
     onHoveringChanged: {
         if (hovering) {
@@ -111,6 +111,16 @@ PanelWindow {
             return batteryModule;
         case "control":
             return controlModule;
+        case "network":
+            return networkModule;
+        case "bluetooth":
+            return bluetoothModule;
+        case "mic":
+            return micModule;
+        case "weather":
+            return weatherModule;
+        case "separator":
+            return separatorModule;
         }
         Modules.warnUnknown(name);
         return null;
@@ -139,6 +149,27 @@ PanelWindow {
         M.Control {
             screenName: win.screenName
         }
+    }
+
+    Component {
+        id: networkModule
+        M.Wifi {}
+    }
+    Component {
+        id: bluetoothModule
+        M.BluetoothStatus {}
+    }
+    Component {
+        id: micModule
+        M.Mic {}
+    }
+    Component {
+        id: weatherModule
+        M.WeatherTemp {}
+    }
+    Component {
+        id: separatorModule
+        M.Separator {}
     }
 
     // Big views the pill can grow into.
