@@ -161,7 +161,7 @@ Column {
         SmallButton {
             label: "Get more fonts"
             highlight: true
-            onClicked: Quickshell.execDetached([Config.terminal, "-e", "sh", "-c", "cd \"$1\" && ./install.sh --fonts; echo; echo 'Done. Press Enter to close, then restart ArchPill to see the new fonts.'; read x", "sh", Updater.repo])
+            onClicked: Quickshell.execDetached(Desktop.inTerminal(["sh", "-c", "cd \"$1\" && ./install.sh --fonts; echo; echo 'Done. Press Enter to close, then restart ArchPill to see the new fonts.'; read x", "sh", Updater.repo]))
         }
         SmallButton {
             label: "Restart ArchPill"

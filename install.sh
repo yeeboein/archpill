@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
-# ArchPill installer for Arch Linux + KDE Plasma 6 (Wayland).
+# ArchPill installer for Arch Linux. Works with KDE Plasma, Hyprland, Sway,
+# niri, river, Wayfire, labwc, COSMIC and (best effort, X11) Xfce/Cinnamon/MATE.
+# GNOME can't show it: GNOME doesn't let apps put panels over windows.
 #
 #   ./install.sh               install packages, copy files, add autostart
 #   ./install.sh --no-packages only copy files + autostart (use after editing the code)
@@ -19,7 +21,35 @@ SETTINGS_LAUNCHER="$APPS_DIR/archpill-settings.desktop"
 APP_LAUNCHER="$APPS_DIR/archpill.desktop"
 
 # Packages ArchPill needs (most are already on a Plasma install).
-PACKAGES=(quickshell qt6-svg qt6-declarative upower pipewire wireplumber networkmanager bluez brightnessctl git libnotify)
+PACKAGES=(quickshell qt6-svg qt6-declarative upower pipewire wireplumber brightnessctl git libnotify)
+
+# Which desktop are we on?
+detect_desktop() {
+    local d="${XDG_CURRENT_DESKTOP:-}:${XDG_SESSION_DESKTOP:-}"
+    d="${d,,}"
+    if [[ -n "${HYPRLAND_INSTANCE_SIGNATURE:-}" || $d == *hyprland* ]]; then echo hyprland
+    elif [[ -n "${NIRI_SOCKET:-}" || $d == *niri* ]]; then echo niri
+    elif [[ -n "${SWAYSOCK:-}" || $d == *sway* ]]; then echo sway
+    elif [[ $d == *kde* || $d == *plasma* ]]; then echo kde
+    elif [[ $d == *gnome* || $d == *ubuntu* ]]; then echo gnome
+    elif [[ $d == *cosmic* ]]; then echo cosmic
+    elif [[ $d == *xfce* ]]; then echo xfce
+    elif [[ $d == *cinnamon* ]]; then echo cinnamon
+    elif [[ $d == *river* ]]; then echo river
+    elif [[ $d == *wayfire* ]]; then echo wayfire
+    elif [[ $d == *labwc* ]]; then echo labwc
+    else echo other; fi
+}
+DESKTOP_ENV="$(detect_desktop)"
+
+# Helpers ArchPill uses outside KDE (screenshots, clipboard history, night light).
+# Only installed if they exist in your repos; nothing breaks without them.
+EXTRA_PACKAGES=()
+case "$DESKTOP_ENV" in
+    kde) ;;
+    hyprland) EXTRA_PACKAGES=(grim slurp wl-clipboard cliphist hyprsunset networkmanager bluez bluez-utils) ;;
+    *) EXTRA_PACKAGES=(grim slurp wl-clipboard cliphist wlsunset networkmanager bluez bluez-utils) ;;
+esac
 
 INSTALL_PACKAGES=1
 AUTOSTART=1
@@ -121,6 +151,14 @@ if [[ $FONTS_ONLY -eq 1 ]]; then
     exit 0
 fi
 
+say "Desktop: $DESKTOP_ENV"
+if [[ $DESKTOP_ENV == gnome ]]; then
+    warn "GNOME doesn't allow apps to place panels over other windows (no 'layer-shell'),"
+    warn "so ArchPill's pill can't appear on GNOME. It works on KDE Plasma, Hyprland, Sway, niri and others."
+    read -r -p "Install anyway? [y/N] " ans
+    [[ "${ans,,}" == "y" ]] || exit 1
+fi
+
 # ---- 1. packages -------------------------------------------------------------
 if [[ $INSTALL_PACKAGES -eq 1 ]]; then
     say "Installing packages: ${PACKAGES[*]}"
@@ -144,6 +182,18 @@ Install yay first:
   git clone https://aur.archlinux.org/yay-bin.git && cd yay-bin && makepkg -si
 then run ./install.sh again."
         fi
+    fi
+fi
+
+if [[ $INSTALL_PACKAGES -eq 1 && ${#EXTRA_PACKAGES[@]} -gt 0 ]]; then
+    extras=()
+    for p in "${EXTRA_PACKAGES[@]}"; do
+        pacman -Qq "$p" >/dev/null 2>&1 && continue
+        pacman -Si "$p" >/dev/null 2>&1 && extras+=("$p")
+    done
+    if [[ ${#extras[@]} -gt 0 ]]; then
+        say "Installing helpers for $DESKTOP_ENV: ${extras[*]}"
+        sudo pacman -S --needed "${extras[@]}" || warn "Some helpers failed to install (ArchPill still works)."
     fi
 fi
 
@@ -179,6 +229,17 @@ else
 fi
 
 # ---- 4. autostart --------------------------------------------------------------
+# KDE, GNOME, Xfce, Cinnamon, COSMIC... use ~/.config/autostart.
+# Hyprland, Sway and niri don't, so a line is added to their config instead
+# (marked "archpill-autostart" so uninstall.sh can remove it).
+START_CMD="env QS_APP_ID=archpill $QS_BIN -c archpill -n -d"
+add_line() { # file, line, comment-prefix
+    local f="$1" line="$2" c="${3:-#}"
+    [[ -f "$f" ]] || return 1
+    grep -q "archpill-autostart" "$f" && { say "Autostart already in $f"; return 0; }
+    printf '\n%s %s\n%s\n' "$c" "archpill-autostart (added by ArchPill's install.sh)" "$line" >> "$f"
+    say "Added autostart to $f"
+}
 if [[ $AUTOSTART -eq 1 ]]; then
     say "Adding autostart entry: $AUTOSTART_FILE"
     mkdir -p "$(dirname "$AUTOSTART_FILE")"
@@ -186,13 +247,19 @@ if [[ $AUTOSTART -eq 1 ]]; then
 [Desktop Entry]
 Type=Application
 Name=ArchPill
-Comment=Dynamic Island-style pill for Plasma
-Exec=env QS_APP_ID=archpill $QS_BIN -c archpill -n -d
+Comment=Dynamic Island-style pill
+Exec=$START_CMD
 Icon=$TARGET/assets/logo.png
 X-KDE-autostart-phase=2
 X-GNOME-Autostart-enabled=true
 NoDisplay=true
 DESKTOP
+    case "$DESKTOP_ENV" in
+        hyprland) add_line "$CONFIG_HOME/hypr/hyprland.conf" "exec-once = $START_CMD" || warn "Add 'exec-once = $START_CMD' to your Hyprland config to start ArchPill at login." ;;
+        sway) add_line "$CONFIG_HOME/sway/config" "exec $START_CMD" || warn "Add 'exec $START_CMD' to your Sway config to start ArchPill at login." ;;
+        niri) add_line "$CONFIG_HOME/niri/config.kdl" "spawn-at-startup \"sh\" \"-c\" \"$START_CMD\"" "//" || warn "Add a spawn-at-startup line for ArchPill to your niri config." ;;
+        river|wayfire|labwc|other) warn "If your desktop doesn't run ~/.config/autostart, start ArchPill at login with: $START_CMD" ;;
+    esac
 else
     rm -f "$AUTOSTART_FILE"
 fi
@@ -229,7 +296,7 @@ update-desktop-database "$APPS_DIR" >/dev/null 2>&1 || true
 
 echo
 say "Done!"
-if [[ $START -eq 1 && -n "${WAYLAND_DISPLAY:-}" ]]; then
+if [[ $START -eq 1 && ( -n "${WAYLAND_DISPLAY:-}" || -n "${DISPLAY:-}" ) ]]; then
     # Restart so the new files are used. The first time, a welcome tour pops up.
     "$QS_BIN" kill -c archpill >/dev/null 2>&1 || true
     sleep 0.5

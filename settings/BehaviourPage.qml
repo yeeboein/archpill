@@ -151,6 +151,7 @@ Column {
             }
         }
         SettingRow {
+            visible: Desktop.isKde
             label: "Plasma's own volume popup"
             description: Plasma.plasmaVolumePopup ? "On - you'll see both. Turn it off to only see the pill." : "Off - only the pill shows volume changes. (uninstall.sh turns it back on.)"
             controlWidth: 220

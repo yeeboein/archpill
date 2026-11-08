@@ -31,7 +31,7 @@ Singleton {
     }
 
     function openSettings() {
-        Quickshell.execDetached(["systemsettings", "kcm_networkmanagement"]);
+        Desktop.run("netsettings");
     }
 
     Process {

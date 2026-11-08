@@ -2,6 +2,7 @@ import QtQuick
 import Quickshell
 import Quickshell.Bluetooth
 import qs.components
+import qs.services
 
 Tile {
     readonly property var adapter: Bluetooth.defaultAdapter
@@ -22,5 +23,5 @@ Tile {
     subtitle: !adapter ? "No adapter" : !on ? "Off" : connectedNames.length > 0 ? connectedNames.join(", ") : "On"
     active: on
     onClicked: if (adapter) adapter.enabled = !adapter.enabled
-    onRightClicked: Quickshell.execDetached(["systemsettings", "kcm_bluetooth"])
+    onRightClicked: Desktop.run("btsettings")
 }

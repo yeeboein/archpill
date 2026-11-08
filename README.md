@@ -2,7 +2,7 @@
 
 <h1 align="center">ArchPill</h1>
 
-<p align="center">A Dynamic Island–style pill for KDE Plasma 6 on Arch Linux.</p>
+<p align="center">A Dynamic Island–style pill for Arch Linux: KDE Plasma, Hyprland, Sway, niri and more.</p>
 
 <p align="center"><img src="docs/screenshots/pill.png" alt="The ArchPill pill"></p>
 
@@ -46,6 +46,7 @@ That's it. Everything below is the detailed version.
 ## Contents
 
 - [Screenshots](#screenshots)
+- [Which desktops work](#which-desktops-work)
 - [What it can do](#what-it-can-do)
 - [Install (detailed)](#install-detailed)
 - [Update](#update)
@@ -77,6 +78,47 @@ That's it. Everything below is the detailed version.
 > These are previews rendered with example data. Want to add real ones from
 > your desktop? Take them with Spectacle and save them in `docs/screenshots/`
 > with the same names.
+
+## Which desktops work
+
+| Desktop | Works? | Notes |
+|---|---|---|
+| **KDE Plasma 6** | ✅ Yes | Everything, including Plasma's own tools (Spectacle, KRunner, Night Light…) |
+| **Hyprland** | ✅ Yes | Autostart is added to `hyprland.conf`. See tips below |
+| **Sway** | ✅ Yes | Autostart is added to `~/.config/sway/config` |
+| **niri** | ✅ Yes | Autostart is added to `config.kdl` |
+| **river, Wayfire, labwc, COSMIC** | ✅ Should work | Same Wayland feature as above; less tested |
+| **Xfce, Cinnamon, MATE, i3 (X11)** | ⚠️ Best effort | Quickshell's X11 support is basic |
+| **GNOME** | ❌ No | GNOME doesn't let apps put panels over other windows ("layer-shell"), so the pill can't appear. The installer warns you |
+
+ArchPill detects your desktop and picks the right tool for each widget. For
+example, screenshots use Spectacle on KDE and `grim`+`slurp` (or `hyprshot`)
+elsewhere; the app launcher uses KRunner, fuzzel, wofi or rofi; Night Light
+uses Plasma's, GNOME's, or `hyprsunset`/`wlsunset`/`gammastep`; the clipboard
+uses Klipper or `cliphist`. Widgets that can't work on your desktop are hidden
+from the catalogue. On non-KDE desktops the installer also installs `grim`,
+`slurp`, `wl-clipboard`, `cliphist` and a night-light tool.
+
+**Restart / Shut Down / Log Out** ask for a second click on desktops without
+their own confirmation screen.
+
+### Tips for Hyprland, Sway and niri
+
+- **Clipboard history** needs cliphist running. Hyprland: add
+  `exec-once = wl-paste --watch cliphist store`. Sway: `exec wl-paste --watch cliphist store`.
+- **Lock screen** uses `loginctl lock-session`, so your idle daemon must handle it
+  (e.g. hypridle with `lock_cmd = hyprlock`, or swayidle with `lock 'swaylock'`).
+- **Hyprland**: ArchPill animates itself, so you can stop Hyprland animating it
+  too, and make Settings a floating window:
+  ```
+  layerrule = noanim, archpill
+  windowrulev2 = float, class:^(archpill)$
+  ```
+  Want *real* blurred glass? Hyprland can blur ArchPill for you:
+  `layerrule = blur, archpill` and `layerrule = ignorezero, archpill`
+  (costs some GPU power).
+- **Keyboard shortcuts**: `bind = SUPER, C, exec, qs -c archpill ipc call archpill toggleControlCenter`
+  (Hyprland) or `bindsym $mod+c exec qs -c archpill ipc call archpill toggleControlCenter` (Sway).
 
 ## What it can do
 
@@ -112,7 +154,7 @@ That's it. Everything below is the detailed version.
 
 ## Install (detailed)
 
-You need Arch Linux with KDE Plasma 6 on Wayland.
+You need Arch Linux with one of the [supported desktops](#which-desktops-work).
 
 ```bash
 git clone https://github.com/yeeboein/archpill.git ~/archpill
@@ -127,13 +169,15 @@ cd ~/archpill
 What `install.sh` does:
 
 1. Installs the packages it needs with `pacman`: `quickshell`, `qt6-svg`,
-   `qt6-declarative`, `upower`, `pipewire`, `wireplumber`, `networkmanager`,
-   `bluez`, `brightnessctl`. Most are already on a Plasma install. If
+   `qt6-declarative`, `upower`, `pipewire`, `wireplumber`, `brightnessctl`,
+   `git`, `libnotify`, plus helpers for your desktop (see above). Most are
+   already installed. If
    `quickshell` isn't in your repos it uses `yay` or `paru` (AUR).
 2. Copies ArchPill to `~/.config/quickshell/archpill`.
 3. Creates your settings file `~/.config/archpill/config.json` (if you don't
    have one yet).
-4. Adds it to Plasma's autostart (`~/.config/autostart/archpill.desktop`).
+4. Makes it start at login (`~/.config/autostart`, or your Hyprland / Sway /
+   niri config).
 5. Adds **ArchPill** (start/restart) and **ArchPill Settings** to your app
    menu. ArchPill's windows show up as "ArchPill" with its logo (needs
    Quickshell 0.3 or newer; check with `qs --version`).

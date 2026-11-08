@@ -31,6 +31,15 @@ rm -f "$AUTOSTART_FILE"
 rm -f "${XDG_DATA_HOME:-$HOME/.local/share}/applications/archpill-settings.desktop"
 rm -f "${XDG_DATA_HOME:-$HOME/.local/share}/applications/archpill.desktop"
 
+# Remove the autostart lines install.sh added for Hyprland / Sway / niri.
+for f in "$CONFIG_HOME/hypr/hyprland.conf" "$CONFIG_HOME/sway/config" "$CONFIG_HOME/niri/config.kdl"; do
+    if [[ -f "$f" ]] && grep -q "archpill-autostart" "$f"; then
+        say "Removing ArchPill autostart from $f"
+        # delete the marker comment and the line after it
+        sed -i '/archpill-autostart/{N;d;}' "$f"
+    fi
+done
+
 say "Removing $TARGET"
 rm -rf "$TARGET"
 

@@ -1,6 +1,7 @@
 import QtQuick
 import qs
 import qs.components
+import qs.services
 
 // Music players, sound, battery, weather and other details.
 Column {
@@ -96,9 +97,10 @@ Column {
     }
 
     Section {
-        title: "Plasma"
+        title: Desktop.isKde ? "Plasma" : "Desktop"
         SettingRow {
             label: "Dark mode colour scheme"
+            visible: Desktop.isKde
             description: "Used by the Dark Mode tile (see System Settings → Colours for names)"
             TextBox {
                 text: Config.darkScheme
@@ -106,6 +108,7 @@ Column {
             }
         }
         SettingRow {
+            visible: Desktop.isKde
             label: "Light mode colour scheme"
             TextBox {
                 text: Config.lightScheme
@@ -114,7 +117,7 @@ Column {
         }
         SettingRow {
             label: "Terminal app"
-            description: "Used by the Terminal tile"
+            description: "\"auto\" picks one you have (now: " + Desktop.terminal + ")"
             TextBox {
                 text: Config.terminal
                 monospace: true

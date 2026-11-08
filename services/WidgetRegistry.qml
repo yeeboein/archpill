@@ -7,8 +7,10 @@ import qs
 // Every widget you can put in the control centre.
 //
 //  - Built-in widgets are listed below. "wide" ones take a full row, the
-//    others are half-width tiles. Widgets with an `action` are simple buttons
-//    that run a command (they all share widgets/ActionTile.qml).
+//    others are half-width tiles. Widgets with `run` are buttons whose command
+//    depends on your desktop (see services/Desktop.qml); `action` is a fixed
+//    command; `kdeOnly` ones only show up on KDE Plasma. They all share
+//    widgets/ActionTile.qml.
 //  - "app:<desktop-file-id>" shows any installed app as a launcher tile,
 //    e.g. "app:org.kde.dolphin.desktop".
 //  - "custom:<id>" shows one of your own buttons from
@@ -23,17 +25,14 @@ Singleton {
     function kwinShortcut(name) {
         return ["dbus-send", "--session", "--type=method_call", "--dest=org.kde.kglobalaccel", "/component/kwin", "org.kde.kglobalaccel.Component.invokeShortcut", "string:" + name];
     }
-    function logoutPrompt(method) {
-        return ["dbus-send", "--session", "--type=method_call", "--dest=org.kde.LogoutPrompt", "/LogoutPrompt", "org.kde.LogoutPrompt." + method];
-    }
 
     readonly property var builtin: [
         // Connectivity
         { id: "wifi", name: "Wi-Fi", icon: "wifi", category: "Connectivity", desc: "Turn Wi-Fi on/off, shows the network. Right-click for settings." },
         { id: "bluetooth", name: "Bluetooth", icon: "bluetooth", category: "Connectivity", desc: "Turn Bluetooth on/off, shows connected devices." },
         { id: "airplane", name: "Airplane Mode", icon: "airplane", category: "Connectivity", desc: "Turns off Wi-Fi, mobile data and Bluetooth at once." },
-        { id: "netsettings", name: "Network Settings", icon: "web", category: "Connectivity", action: ["systemsettings", "kcm_networkmanagement"] },
-        { id: "btsettings", name: "Bluetooth Settings", icon: "bluetooth", category: "Connectivity", action: ["systemsettings", "kcm_bluetooth"] },
+        { id: "netsettings", name: "Network Settings", icon: "web", category: "Connectivity", run: "netsettings" },
+        { id: "btsettings", name: "Bluetooth Settings", icon: "bluetooth", category: "Connectivity", run: "btsettings" },
 
         // Sound & Display
         { id: "volume", name: "Volume", icon: "volume-up", category: "Sound & Display", wide: true, desc: "Speaker volume slider." },
@@ -44,8 +43,8 @@ Singleton {
         { id: "brightness", name: "Brightness", icon: "sun", category: "Sound & Display", wide: true, desc: "Screen brightness slider." },
         { id: "nightlight", name: "Night Light", icon: "bulb", category: "Sound & Display", desc: "Warmer colours in the evening (Plasma Night Light)." },
         { id: "darkmode", name: "Dark Mode", icon: "contrast", category: "Sound & Display", desc: "Switch Plasma between light and dark colours." },
-        { id: "soundsettings", name: "Sound Settings", icon: "speaker", category: "Sound & Display", action: ["systemsettings", "kcm_pulseaudio"] },
-        { id: "displaysettings", name: "Display Settings", icon: "desktop", category: "Sound & Display", action: ["systemsettings", "kcm_kscreen"] },
+        { id: "soundsettings", name: "Sound Settings", icon: "speaker", category: "Sound & Display", run: "soundsettings" },
+        { id: "displaysettings", name: "Display Settings", icon: "desktop", category: "Sound & Display", run: "displaysettings" },
 
         // Media
         { id: "media", name: "Now Playing", icon: "music", category: "Media", wide: true, desc: "Song, art and controls." },
@@ -65,33 +64,33 @@ Singleton {
         { id: "caffeine", name: "Stay Awake", icon: "coffee", category: "Tools", desc: "Stop the screen from turning off / the PC from sleeping." },
         { id: "timer", name: "Timer", icon: "timer", category: "Tools", wide: true, desc: "Stopwatch and countdown." },
         { id: "clipboard", name: "Clipboard", icon: "clipboard", category: "Tools", wide: true, desc: "Last copied items from Plasma's clipboard. Click to copy again." },
-        { id: "screenshot", name: "Screenshot", icon: "camera", category: "Tools", action: ["spectacle", "-r"] },
-        { id: "screenshotfull", name: "Full Screenshot", icon: "camera", category: "Tools", action: ["spectacle", "-f"] },
-        { id: "record", name: "Screen Recording", icon: "videocam", category: "Tools", action: ["spectacle", "--record", "r"] },
-        { id: "emoji", name: "Emoji Picker", icon: "emoji", category: "Tools", action: ["plasma-emojier"] },
-        { id: "keyboard", name: "Next Keyboard Layout", icon: "keyboard", category: "Tools", action: ["dbus-send", "--session", "--type=method_call", "--dest=org.kde.keyboard", "/Layouts", "org.kde.KeyboardLayouts.switchToNextLayout"] },
-        { id: "clipboardmenu", name: "Clipboard Menu", icon: "clipboard", category: "Tools", action: ["dbus-send", "--session", "--type=method_call", "--dest=org.kde.klipper", "/klipper", "org.kde.klipper.klipper.showKlipperPopupMenu"] },
+        { id: "screenshot", name: "Screenshot", icon: "camera", category: "Tools", run: "screenshot" },
+        { id: "screenshotfull", name: "Full Screenshot", icon: "camera", category: "Tools", run: "screenshotfull" },
+        { id: "record", name: "Screen Recording", icon: "videocam", category: "Tools", run: "record" },
+        { id: "emoji", name: "Emoji Picker", icon: "emoji", category: "Tools", run: "emoji" },
+        { id: "keyboard", name: "Next Keyboard Layout", icon: "keyboard", category: "Tools", run: "keyboard" },
+        { id: "clipboardmenu", name: "Clipboard Menu", icon: "clipboard", category: "Tools", kdeOnly: true, action: ["dbus-send", "--session", "--type=method_call", "--dest=org.kde.klipper", "/klipper", "org.kde.klipper.klipper.showKlipperPopupMenu"] },
         { id: "emptytrash", name: "Empty Trash", icon: "trash", category: "Tools", action: ["gio", "trash", "--empty"] },
-        { id: "terminal", name: "Terminal", icon: "terminal", category: "Tools", action: [Config.terminal] },
-        { id: "files", name: "Files", icon: "folder", category: "Tools", action: ["xdg-open", Quickshell.env("HOME") || "/"] },
-        { id: "sysmonitor", name: "System Monitor App", icon: "chart", category: "Tools", action: ["plasma-systemmonitor"] },
-        { id: "systemsettings", name: "System Settings", icon: "settings", category: "Tools", action: ["systemsettings"] },
+        { id: "terminal", name: "Terminal", icon: "terminal", category: "Tools", run: "terminal" },
+        { id: "files", name: "Files", icon: "folder", category: "Tools", run: "files" },
+        { id: "sysmonitor", name: "System Monitor App", icon: "chart", category: "Tools", run: "sysmonitor" },
+        { id: "systemsettings", name: "System Settings", icon: "settings", category: "Tools", run: "systemsettings" },
 
         // Windows & Desktop
-        { id: "overview", name: "Overview", icon: "windows", category: "Windows & Desktop", action: kwinShortcut("Overview") },
-        { id: "showdesktop", name: "Show Desktop", icon: "desktop", category: "Windows & Desktop", action: kwinShortcut("Show Desktop") },
-        { id: "allwindows", name: "All Windows", icon: "apps", category: "Windows & Desktop", action: kwinShortcut("ExposeAll") },
-        { id: "gridview", name: "Desktop Grid", icon: "windows", category: "Windows & Desktop", action: kwinShortcut("Grid View") },
-        { id: "search", name: "Search (KRunner)", icon: "search", category: "Windows & Desktop", action: ["krunner"] },
+        { id: "overview", name: "Overview", icon: "windows", category: "Windows & Desktop", kdeOnly: true, action: kwinShortcut("Overview") },
+        { id: "showdesktop", name: "Show Desktop", icon: "desktop", category: "Windows & Desktop", kdeOnly: true, action: kwinShortcut("Show Desktop") },
+        { id: "allwindows", name: "All Windows", icon: "apps", category: "Windows & Desktop", kdeOnly: true, action: kwinShortcut("ExposeAll") },
+        { id: "gridview", name: "Desktop Grid", icon: "windows", category: "Windows & Desktop", kdeOnly: true, action: kwinShortcut("Grid View") },
+        { id: "search", name: "App Launcher / Search", icon: "search", category: "Windows & Desktop", run: "search" },
 
         // Power
         { id: "power", name: "Power Buttons", icon: "power", category: "Power", wide: true, desc: "Lock, Sleep and Log out in one row." },
-        { id: "lock", name: "Lock Screen", icon: "lock", category: "Power", action: ["loginctl", "lock-session"] },
-        { id: "sleep", name: "Sleep", icon: "moon", category: "Power", action: ["systemctl", "suspend"] },
-        { id: "hibernate", name: "Hibernate", icon: "snowflake", category: "Power", action: ["systemctl", "hibernate"] },
-        { id: "logout", name: "Log Out", icon: "logout", category: "Power", action: logoutPrompt("promptLogout") },
-        { id: "restart", name: "Restart", icon: "restart", category: "Power", action: logoutPrompt("promptReboot") },
-        { id: "shutdown", name: "Shut Down", icon: "power", category: "Power", action: logoutPrompt("promptShutDown") },
+        { id: "lock", name: "Lock Screen", icon: "lock", category: "Power", run: "lock" },
+        { id: "sleep", name: "Sleep", icon: "moon", category: "Power", run: "sleep" },
+        { id: "hibernate", name: "Hibernate", icon: "snowflake", category: "Power", run: "hibernate" },
+        { id: "logout", name: "Log Out", icon: "logout", category: "Power", run: "logout", confirm: true },
+        { id: "restart", name: "Restart", icon: "restart", category: "Power", run: "restart", confirm: true },
+        { id: "shutdown", name: "Shut Down", icon: "power", category: "Power", run: "shutdown", confirm: true },
 
         // ArchPill
         { id: "archpillsettings", name: "ArchPill Settings", icon: "palette", category: "ArchPill", desc: "Open the ArchPill settings app." },
@@ -124,7 +123,27 @@ Singleton {
         return null;
     }
 
+    // Can this widget work on the current desktop?
+    function supported(w) {
+        if (!w)
+            return false;
+        if (w.kdeOnly)
+            return Desktop.isKde;
+        if (w.run)
+            return Desktop.can(w.run);
+        if (w.id === "nightlight")
+            return Plasma.nightLightSupported;
+        if (w.id === "darkmode")
+            return Plasma.darkModeSupported;
+        if (w.id === "clipboard")
+            return Desktop.isKde || Desktop.has("cliphist");
+        return true;
+    }
+
+    // The catalogue: only widgets that work here.
+    readonly property var available: builtin.filter(w => supported(w))
+
     function inCategory(cat) {
-        return builtin.filter(w => w.category === cat);
+        return available.filter(w => w.category === cat);
     }
 }

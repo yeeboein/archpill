@@ -230,7 +230,7 @@ FloatingWindow {
                 text: "Volume in the pill"
             }
             Body {
-                text: "When you change the volume, the pill shows a volume bar for a moment. Plasma also shows its own popup in the middle of the screen, so you'd see two. Turn Plasma's off to only see the pill. (You can turn it back on any time, and uninstalling ArchPill does it for you.)"
+                text: Desktop.isKde ? "When you change the volume, the pill shows a volume bar for a moment. Plasma also shows its own popup in the middle of the screen, so you'd see two. Turn Plasma's off to only see the pill. (You can turn it back on any time, and uninstalling ArchPill does it for you.)" : "When you change the volume, the pill shows a volume bar for a moment."
             }
             Rectangle {
                 width: parent.width
@@ -251,6 +251,7 @@ FloatingWindow {
                         }
                     }
                     SettingRow {
+                        visible: Desktop.isKde
                         label: "Plasma's own volume popup"
                         description: Plasma.plasmaVolumePopup ? "Currently ON - you'll see two popups" : "Currently OFF - only the pill shows volume ✓"
                         controlWidth: 200
@@ -274,7 +275,7 @@ FloatingWindow {
                 }
             }
             Body {
-                visible: Plasma.plasmaVolumePopup === false
+                visible: Desktop.isKde && Plasma.plasmaVolumePopup === false
                 text: "If Plasma's popup still appears after this, log out and back in once."
                 sizeFactor: 0.95
             }
@@ -405,19 +406,17 @@ FloatingWindow {
                 text: "Optional: a keyboard shortcut"
             }
             Body {
-                text: "You can open the control centre with a key, e.g. Meta+C."
+                text: "You can open the control centre with a key, e.g. Super+C."
             }
-            Step {
-                number: "1"
-                text: "Open System Settings → Keyboard → Shortcuts."
-            }
-            Step {
-                number: "2"
-                text: "Click \"Add New\" → \"Command or Script…\"."
-            }
-            Step {
-                number: "3"
-                text: "Paste this command (copy button below), then pick a key:"
+            // Steps for your desktop
+            Repeater {
+                model: Desktop.shortcutSteps
+                delegate: Step {
+                    required property var modelData
+                    required property int index
+                    number: String(index + 1)
+                    text: modelData
+                }
             }
             Rectangle {
                 width: parent.width
@@ -428,7 +427,7 @@ FloatingWindow {
                     anchors.verticalCenter: parent.verticalCenter
                     x: 12
                     width: parent.width - 110
-                    text: win.shortcutCmd
+                    text: Desktop.shortcutLine(win.shortcutCmd)
                     font.family: "monospace"
                     sizeFactor: 0.95
                 }
@@ -439,7 +438,7 @@ FloatingWindow {
                     label: win.copied ? "Copied ✓" : "Copy"
                     highlight: !win.copied
                     onClicked: {
-                        Quickshell.clipboardText = win.shortcutCmd;
+                        Quickshell.clipboardText = Desktop.shortcutLine(win.shortcutCmd);
                         win.copied = true;
                     }
                 }
@@ -447,8 +446,9 @@ FloatingWindow {
             Row {
                 spacing: 8
                 SmallButton {
+                    visible: Desktop.isKde || Desktop.isGnome
                     label: "Open shortcut settings"
-                    onClicked: Quickshell.execDetached(["systemsettings", "kcm_keys"])
+                    onClicked: Quickshell.execDetached(Desktop.isKde ? ["systemsettings", "kcm_keys"] : ["gnome-control-center", "keyboard"])
                 }
             }
         }

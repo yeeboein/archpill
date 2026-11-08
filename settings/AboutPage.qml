@@ -153,7 +153,7 @@ Column {
 
     Section {
         title: "Keyboard shortcuts"
-        note: "System Settings → Keyboard → Shortcuts → Add New → Command or Script. Paste a command below and pick a key. \"Copy\" puts it on your clipboard."
+        note: (Desktop.isKde ? "System Settings → Keyboard → Shortcuts → Add New → Command or Script. Paste a command below and pick a key." : Desktop.de === "hyprland" ? "Add a line like  bind = SUPER, C, exec, <command>  to ~/.config/hypr/hyprland.conf." : Desktop.de === "sway" ? "Add a line like  bindsym $mod+c exec <command>  to ~/.config/sway/config." : Desktop.isGnome ? "Settings → Keyboard → Custom Shortcuts → +. Paste a command below and pick a key." : "Add a custom shortcut in your desktop's settings that runs one of these commands.") + " \"Copy\" puts the command on your clipboard."
         Repeater {
             model: page.commands
             delegate: SettingRow {

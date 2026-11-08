@@ -4,8 +4,8 @@ import qs
 import qs.components
 import qs.services
 
-// Lock / Sleep / Log out. "Log out" opens Plasma's own logout screen,
-// which also has Restart and Shut Down.
+// Lock / Sleep / Log out. On KDE "Log out" opens Plasma's own logout
+// screen (which also has Restart and Shut Down).
 Card {
     Row {
         width: parent.width
@@ -13,9 +13,9 @@ Card {
 
         Repeater {
             model: [
-                { icon: "lock", label: "Lock", cmd: ["loginctl", "lock-session"] },
-                { icon: "moon", label: "Sleep", cmd: ["systemctl", "suspend"] },
-                { icon: "power", label: "Log out…", cmd: ["dbus-send", "--session", "--type=method_call", "--dest=org.kde.LogoutPrompt", "/LogoutPrompt", "org.kde.LogoutPrompt.promptAll"] }
+                { icon: "lock", label: "Lock", run: "lock" },
+                { icon: "moon", label: "Sleep", run: "sleep" },
+                { icon: "power", label: Desktop.isKde ? "Log out…" : "Log out", run: "logout" }
             ]
             delegate: Rectangle {
                 required property var modelData
@@ -44,7 +44,7 @@ Card {
                     cursorShape: Qt.PointingHandCursor
                     onClicked: {
                         PillState.close();
-                        Quickshell.execDetached(modelData.cmd);
+                        Desktop.run(modelData.run);
                     }
                 }
             }

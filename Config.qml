@@ -114,7 +114,7 @@ Singleton {
     readonly property string weatherUnits: get("weather.units", "m") // "m" metric, "u" US
     readonly property string darkScheme: get("theme.darkScheme", "BreezeDark")
     readonly property string lightScheme: get("theme.lightScheme", "BreezeLight")
-    readonly property string terminal: get("apps.terminal", "konsole")
+    readonly property string terminal: get("apps.terminal", "auto") // "auto" = pick one that's installed
 
     // ---- Helpers ------------------------------------------------------------
 

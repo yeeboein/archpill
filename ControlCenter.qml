@@ -50,7 +50,7 @@ Item {
     function componentFor(id, info) {
         if (!info)
             return null;
-        if (info.action || info.app || info.custom)
+        if (info.action || info.run || info.app || info.custom)
             return actionW;
         const c = table[id];
         if (!c)
@@ -214,8 +214,9 @@ Item {
                     readonly property var info: WidgetRegistry.info(modelData)
                     readonly property bool wide: !info || !!info.wide
 
-                    visible: !!info
-                    width: wide ? flow.width : (flow.width - root.gap) / 2
+                    // Hidden if this widget can't work on the current desktop.
+                    visible: !!info && (!!info.app || !!info.custom || WidgetRegistry.supported(info))
+                    width: !visible ? 0 : wide ? flow.width : (flow.width - root.gap) / 2
                     height: Math.max(loader.item ? loader.item.implicitHeight : 0, PillState.editing ? 50 : 0)
 
                     Loader {

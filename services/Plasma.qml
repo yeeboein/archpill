@@ -5,7 +5,9 @@ import Quickshell
 import Quickshell.Io
 import qs
 
-// Small bridges to Plasma features: Night Light, Dark Mode, Stay Awake.
+// Bridges to desktop features: Night Light, Dark Mode, Stay Awake and
+// Plasma's volume popup. Each one picks the right method for your desktop
+// (KDE, GNOME, or a sunset tool / GTK setting on Hyprland, Sway, niri...).
 // State is read when the control centre opens (refresh), never polled.
 Singleton {
     id: root
@@ -16,6 +18,13 @@ Singleton {
     property bool caffeine: false
     // Plasma's own volume popup (plasma-pa "VolumeOsd" + "MuteOsd" settings in plasmaparc).
     property bool plasmaVolumePopup: true
+
+    // Night light: KDE and GNOME have their own; elsewhere we run a sunset tool
+    // while it's on (hyprsunset, wlsunset or gammastep).
+    readonly property string sunsetTool: Desktop.first(["hyprsunset", "wlsunset", "gammastep"])
+    readonly property bool nightLightSupported: Desktop.isKde || (Desktop.isGnome && Desktop.has("gsettings")) || sunsetTool !== ""
+    // Dark mode: Plasma colour schemes on KDE, the GTK/GNOME setting elsewhere.
+    readonly property bool darkModeSupported: Desktop.isKde || Desktop.has("gsettings")
 
     // Turn Plasma's volume popup off/on. ArchPill leaves a marker file so
     // uninstall.sh knows to turn it back on.
@@ -68,28 +77,48 @@ Singleton {
 
     function setNightLight(on) {
         nightLight = on;
-        Quickshell.execDetached(["sh", "-c", "kwriteconfig6 --file kwinrc --group NightColor --key Active " + (on ? "true" : "false") + " && dbus-send --session --type=method_call --dest=org.kde.KWin /KWin org.kde.KWin.reconfigure"]);
+        if (Desktop.isKde)
+            Quickshell.execDetached(["sh", "-c", "kwriteconfig6 --file kwinrc --group NightColor --key Active " + (on ? "true" : "false") + " && dbus-send --session --type=method_call --dest=org.kde.KWin /KWin org.kde.KWin.reconfigure"]);
+        else if (Desktop.isGnome)
+            Quickshell.execDetached(["gsettings", "set", "org.gnome.settings-daemon.plugins.color", "night-light-enabled", on ? "true" : "false"]);
+        // otherwise the sunsetProcess below starts/stops with `nightLight`
     }
 
     function openNightLightSettings() {
-        Quickshell.execDetached(["systemsettings", "kcm_nightlight"]);
+        Desktop.run("nightlightsettings");
     }
 
     function setDarkMode(on) {
         darkMode = on;
-        Quickshell.execDetached(["plasma-apply-colorscheme", on ? Config.darkScheme : Config.lightScheme]);
+        if (Desktop.isKde)
+            Quickshell.execDetached(["plasma-apply-colorscheme", on ? Config.darkScheme : Config.lightScheme]);
+        else
+            Quickshell.execDetached(["gsettings", "set", "org.gnome.desktop.interface", "color-scheme", on ? "prefer-dark" : "default"]);
+    }
+
+    // Warm screen colours on desktops without a built-in night light.
+    Process {
+        running: root.nightLight && !Desktop.isKde && !Desktop.isGnome && root.sunsetTool !== ""
+        command: root.sunsetTool === "hyprsunset" ? ["hyprsunset", "-t", "4000"] : root.sunsetTool === "wlsunset" ? ["wlsunset", "-T", "4001", "-t", "4000"] : ["gammastep", "-O", "4000"]
     }
 
     Process {
         id: reader
-        command: ["sh", "-c", "kreadconfig6 --file kwinrc --group NightColor --key Active --default false; kreadconfig6 --file kdeglobals --group General --key ColorScheme --default BreezeLight; kreadconfig6 --file plasmaparc --group General --key VolumeOsd --default true"]
+        command: Desktop.isKde ? ["sh", "-c", "kreadconfig6 --file kwinrc --group NightColor --key Active --default false; kreadconfig6 --file kdeglobals --group General --key ColorScheme --default BreezeLight; kreadconfig6 --file plasmaparc --group General --key VolumeOsd --default true"] : ["sh", "-c", "gsettings get org.gnome.settings-daemon.plugins.color night-light-enabled 2>/dev/null || echo unknown; gsettings get org.gnome.desktop.interface color-scheme 2>/dev/null || echo default"]
         stdout: StdioCollector {
             onStreamFinished: {
                 const l = text.trim().split("\n");
-                root.nightLight = (l[0] || "").trim() === "true";
-                root.colorScheme = (l[1] || "").trim();
-                root.darkMode = root.colorScheme.toLowerCase().indexOf("dark") !== -1;
-                root.plasmaVolumePopup = (l[2] || "true").trim() !== "false";
+                if (Desktop.isKde) {
+                    root.nightLight = (l[0] || "").trim() === "true";
+                    root.colorScheme = (l[1] || "").trim();
+                    root.darkMode = root.colorScheme.toLowerCase().indexOf("dark") !== -1;
+                    root.plasmaVolumePopup = (l[2] || "true").trim() !== "false";
+                } else {
+                    if (Desktop.isGnome)
+                        root.nightLight = (l[0] || "").trim() === "true";
+                    root.colorScheme = (l[1] || "").replace(/'/g, "").trim();
+                    root.darkMode = root.colorScheme === "prefer-dark";
+                }
             }
         }
     }

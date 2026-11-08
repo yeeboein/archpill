@@ -62,7 +62,7 @@ Column {
 
     Section {
         title: "Widget catalogue"
-        note: WidgetRegistry.builtin.length + " built-in widgets. Nothing runs until you add it."
+        note: WidgetRegistry.available.length + " widgets work on " + Desktop.niceName + ". Nothing runs until you add it."
         TextBox {
             placeholder: "Search widgets…"
             onEdited: t => page.search = t.toLowerCase()
@@ -105,7 +105,7 @@ Column {
             height: 6
         }
         Repeater {
-            model: WidgetRegistry.builtin.filter(w => (page.category === "All" || w.category === page.category) && (page.search === "" || (w.name + " " + (w.desc || "") + " " + w.category).toLowerCase().indexOf(page.search) !== -1))
+            model: WidgetRegistry.available.filter(w => (page.category === "All" || w.category === page.category) && (page.search === "" || (w.name + " " + (w.desc || "") + " " + w.category).toLowerCase().indexOf(page.search) !== -1))
             delegate: SettingRow {
                 required property var modelData
                 label: modelData.name + (modelData.wide ? "  ·  wide" : "")
