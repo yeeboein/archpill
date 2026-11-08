@@ -133,7 +133,9 @@ What `install.sh` does:
 3. Creates your settings file `~/.config/archpill/config.json` (if you don't
    have one yet).
 4. Adds it to Plasma's autostart (`~/.config/autostart/archpill.desktop`).
-5. Adds **ArchPill Settings** to your app menu.
+5. Adds **ArchPill** (start/restart) and **ArchPill Settings** to your app
+   menu. ArchPill's windows show up as "ArchPill" with its logo (needs
+   Quickshell 0.3 or newer; check with `qs --version`).
 6. Starts ArchPill. The first time, the welcome tour opens.
 
 Options:
@@ -144,6 +146,7 @@ Options:
 | `./install.sh --no-autostart` | Don't start ArchPill when you log in |
 | `./install.sh --reset-config` | Back up your settings and start fresh |
 | `./install.sh --no-start` | Don't start ArchPill at the end |
+| `./install.sh --fonts` | Only install a pack of extra free fonts |
 
 ## Update
 
@@ -190,7 +193,8 @@ centre):
 |---|---|
 | **Pill** | Which modules are in the pill and their order (drag ⠿), clock and date format, music buttons, album art… |
 | **Control Centre** | Widgets and their order, the widget catalogue (search + categories), app tiles, your own buttons |
-| **Appearance** | Themes, style (solid / liquid glass / black + glass edges / tinted glass), every colour, opacity, size, corner radius, padding, font, text size, animation speed |
+| **Pill** (extra) | A live preview of your pill sits at the top while you edit. Separators (dot, line, space, wide space) can be added as many times as you like |
+| **Appearance** | Themes, style (solid / liquid glass / black + glass edges / tinted glass), every colour, opacity, size, corner radius, padding, font (browse every installed font, or press *Get more fonts* for a free font pack), text size, animation speed |
 | **Behaviour** | Always show or hover, hover area, delays, what a click does, volume popup, layer, screens |
 | **Music & More** | Preferred / ignored music players, volume step, max volume, battery warning, weather location, dark/light schemes, terminal |
 | **Shortcuts & Reset** | Copy-paste shortcut commands, welcome tour, open the settings file, reset everything |
@@ -252,7 +256,7 @@ kwriteconfig6 --notify --file plasmaparc --group General --key MuteOsd true
 ## All commands
 
 ```bash
-qs -c archpill -n -d                               # start ArchPill
+QS_APP_ID=archpill qs -c archpill -n -d            # start ArchPill (or: app menu -> ArchPill)
 qs kill -c archpill                                # stop it
 qs log -c archpill                                 # show its log
 qs -c archpill ipc call archpill toggleControlCenter

@@ -16,11 +16,18 @@ Singleton {
         { id: "bluetooth", name: "Bluetooth", icon: "bluetooth", desc: "Shows when Bluetooth is on / connected." },
         { id: "mic", name: "Microphone", icon: "mic", desc: "Appears only while your mic is muted." },
         { id: "weather", name: "Weather", icon: "cloud", desc: "Temperature (needs internet)." },
-        { id: "separator", name: "Separator", icon: "dot", desc: "A small dot between modules." }
+        { id: "separator", name: "Dot", icon: "dot", desc: "Separator: a small dot.", repeatable: true },
+        { id: "separator:line", name: "Line", icon: "minus", desc: "Separator: a thin vertical line.", repeatable: true },
+        { id: "separator:space", name: "Space", icon: "space", desc: "Separator: a little empty space.", repeatable: true },
+        { id: "separator:wide", name: "Wide space", icon: "space", desc: "Separator: a bigger empty space.", repeatable: true }
     ]
     readonly property var available: all.map(m => m.id)
 
+    readonly property var separators: all.filter(m => m.repeatable)
+    readonly property var singles: all.filter(m => !m.repeatable)
+
     function info(id) {
+        id = String(id).toLowerCase();
         for (let i = 0; i < all.length; i++)
             if (all[i].id === id)
                 return all[i];

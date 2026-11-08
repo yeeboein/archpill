@@ -4,7 +4,6 @@ import Quickshell.Wayland
 import qs
 import qs.services
 import qs.components
-import qs.modules as M
 
 // The pill: one transparent layer-shell window at the top-centre of a screen.
 //
@@ -113,82 +112,6 @@ PanelWindow {
         Region {
             item: win.open ? hitbox : null
         }
-    }
-
-    // ---- modules ------------------------------------------------------------
-    // Name in config ("pill.modules") -> module. Add new modules here
-    // and in Modules.qml.
-    function componentFor(name) {
-        switch (String(name).toLowerCase()) {
-        case "clock":
-            return clockModule;
-        case "media":
-            return mediaModule;
-        case "volume":
-            return volumeModule;
-        case "battery":
-            return batteryModule;
-        case "control":
-            return controlModule;
-        case "network":
-            return networkModule;
-        case "bluetooth":
-            return bluetoothModule;
-        case "mic":
-            return micModule;
-        case "weather":
-            return weatherModule;
-        case "separator":
-            return separatorModule;
-        }
-        Modules.warnUnknown(name);
-        return null;
-    }
-
-    Component {
-        id: clockModule
-        M.Clock {}
-    }
-    Component {
-        id: mediaModule
-        M.Media {
-            screenName: win.screenName
-        }
-    }
-    Component {
-        id: volumeModule
-        M.Volume {}
-    }
-    Component {
-        id: batteryModule
-        M.Battery {}
-    }
-    Component {
-        id: controlModule
-        M.Control {
-            screenName: win.screenName
-        }
-    }
-
-    Component {
-        id: networkModule
-        M.Wifi {}
-    }
-    Component {
-        id: bluetoothModule
-        M.BluetoothStatus {}
-    }
-    Component {
-        id: micModule
-        M.Mic {}
-    }
-    Component {
-        id: weatherModule
-        M.WeatherTemp {}
-    }
-    Component {
-        id: separatorModule
-        M.Separator {}
     }
 
     // Big views the pill can grow into.
@@ -307,26 +230,15 @@ PanelWindow {
             }
 
             // Normal (compact) contents.
-            Row {
+            PillContent {
                 id: modulesRow
                 anchors.centerIn: parent
-                spacing: Config.pillSpacing
+                screenName: win.screenName
                 opacity: win.expanded || win.osd ? 0 : 1
                 visible: opacity > 0
                 Behavior on opacity {
                     NumberAnimation {
                         duration: Config.animDuration / 2
-                    }
-                }
-
-                Repeater {
-                    model: Config.modules
-
-                    delegate: Loader {
-                        required property var modelData
-                        anchors.verticalCenter: parent ? parent.verticalCenter : undefined
-                        sourceComponent: win.componentFor(modelData)
-                        visible: status === Loader.Ready && !!item && item.shown !== false
                     }
                 }
             }

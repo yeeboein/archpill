@@ -26,7 +26,7 @@ Column {
             width: parent.width
             spacing: 6
             Repeater {
-                model: Modules.all.filter(m => Config.modules.indexOf(m.id) === -1)
+                model: Modules.singles.filter(m => Config.modules.indexOf(m.id) === -1)
                 delegate: AddChip {
                     required property var modelData
                     label: modelData.name
@@ -37,9 +37,41 @@ Column {
             }
         }
         PillText {
-            visible: Modules.all.every(m => Config.modules.indexOf(m.id) !== -1)
+            visible: Modules.singles.every(m => Config.modules.indexOf(m.id) !== -1)
             text: "Every module is already in the pill."
             color: Config.subtle
+        }
+        Item {
+            width: 1
+            height: 10
+        }
+        PillText {
+            text: "Separators - add as many as you like, then drag them into place"
+            color: Config.subtle
+            sizeFactor: 0.9
+        }
+        Item {
+            width: 1
+            height: 6
+        }
+        Flow {
+            width: parent.width
+            spacing: 6
+            Repeater {
+                model: Modules.separators
+                delegate: AddChip {
+                    required property var modelData
+                    label: modelData.name
+                    icon: modelData.icon
+                    onAdd: Config.setValue("pill.modules", Config.modules.concat([modelData.id]))
+                }
+            }
+            SmallButton {
+                visible: Config.modules.some(m => String(m).indexOf("separator") === 0)
+                label: "Remove all separators"
+                danger: true
+                onClicked: Config.setValue("pill.modules", Config.modules.filter(m => String(m).indexOf("separator") !== 0))
+            }
         }
     }
 

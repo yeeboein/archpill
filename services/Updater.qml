@@ -69,6 +69,11 @@ Singleton {
         }
     }
 
+    // Restart ArchPill (e.g. after installing new fonts).
+    function restart() {
+        Quickshell.execDetached(["setsid", "sh", "-c", "sleep 0.3; qs kill -c archpill; sleep 0.7; QS_APP_ID=archpill qs -c archpill -n -d"]);
+    }
+
     function notify(title, body) {
         Quickshell.execDetached(["notify-send", "-a", "ArchPill", "-i", Quickshell.shellPath("assets/logo.png"), title, body]);
     }

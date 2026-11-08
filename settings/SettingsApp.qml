@@ -128,11 +128,21 @@ FloatingWindow {
     }
 
     // ---- page ------------------------------------------------------------------
+    // Live pill preview, pinned above the Pill and Appearance pages.
+    PillPreview {
+        id: preview
+        visible: win.page === "pill" || win.page === "appearance"
+        anchors.left: sidebar.right
+        anchors.right: parent.right
+        anchors.top: parent.top
+        height: visible ? implicitHeight : 0
+    }
+
     Flickable {
         id: flick
         anchors.left: sidebar.right
         anchors.right: parent.right
-        anchors.top: parent.top
+        anchors.top: preview.bottom
         anchors.bottom: parent.bottom
         contentHeight: pageLoader.height + 60
         clip: true
@@ -180,7 +190,7 @@ FloatingWindow {
         id: scrollTrack
         visible: flick.contentHeight > flick.height
         anchors.right: parent.right
-        anchors.top: parent.top
+        anchors.top: flick.top
         anchors.bottom: parent.bottom
         width: 14
 

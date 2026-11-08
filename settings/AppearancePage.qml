@@ -11,7 +11,6 @@ Column {
 
     readonly property var themes: Themes.all
 
-    property string fontSearch: ""
 
     Section {
         title: "Theme"
@@ -365,36 +364,10 @@ Column {
 
     Section {
         title: "Text"
-        SettingRow {
-            label: "Font"
-            description: Config.fontFamily === "" ? "Using your Plasma font" : "Using " + Config.fontFamily
-            controlWidth: 320
-            Column {
-                width: parent.width
-                spacing: 6
-                TextBox {
-                    placeholder: "Search fonts…"
-                    onEdited: t => page.fontSearch = t.toLowerCase()
-                }
-                Flow {
-                    width: parent.width
-                    spacing: 4
-                    SmallButton {
-                        label: "Plasma default"
-                        highlight: Config.fontFamily === ""
-                        onClicked: Config.setValue("font.family", "")
-                    }
-                    Repeater {
-                        model: page.fontSearch.length < 1 ? [] : Qt.fontFamilies().filter(f => f.toLowerCase().indexOf(page.fontSearch) !== -1).slice(0, 12)
-                        delegate: SmallButton {
-                            required property var modelData
-                            label: modelData
-                            highlight: Config.fontFamily === modelData
-                            onClicked: Config.setValue("font.family", modelData)
-                        }
-                    }
-                }
-            }
+        FontPicker {}
+        Item {
+            width: 1
+            height: 8
         }
         SettingRow {
             label: "Text size"
