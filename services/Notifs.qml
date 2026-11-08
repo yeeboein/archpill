@@ -186,6 +186,35 @@ Singleton {
         dismissCurrent();
     }
 
+    // Show a sample in the pill without going through the notification
+    // system (works even while Plasma still handles notifications).
+    function showPreview() {
+        const sample = {
+            id: -1,
+            appName: "ArchPill",
+            summary: "Hello from ArchPill 👋",
+            body: "This is what notifications look like in the pill.",
+            image: Quickshell.shellPath("assets/logo.png"),
+            appIcon: "",
+            desktopEntry: "",
+            urgency: 1,
+            expireTimeout: -1,
+            actions: [],
+            dismiss: function () {}
+        };
+        queue = queue.concat([sample]);
+        if (!current)
+            next();
+    }
+
+    // Test button: a real notification once ArchPill handles them, a preview before that.
+    function test() {
+        if (active)
+            Quickshell.execDetached(["notify-send", "-a", "ArchPill", "-i", Quickshell.shellPath("assets/logo.png"), "Hello from ArchPill 👋", "This is what notifications look like in the pill."]);
+        else
+            showPreview();
+    }
+
     function clearHistory() {
         history = [];
         unread = 0;

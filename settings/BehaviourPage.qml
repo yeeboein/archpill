@@ -201,11 +201,12 @@ Column {
         }
         SettingRow {
             label: "Send a test notification"
+            description: Notifs.active ? "" : "Shows a preview in the pill. Real notifications go to Plasma until you press \"Use ArchPill\" above."
             controlWidth: 120
             SmallButton {
                 anchors.right: parent.right
                 label: "Test"
-                onClicked: Quickshell.execDetached(["notify-send", "-a", "ArchPill", "-i", Quickshell.shellPath("assets/logo.png"), "Hello from ArchPill 👋", "This is what notifications look like in the pill."])
+                onClicked: Notifs.test()
             }
         }
     }
