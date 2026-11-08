@@ -8,6 +8,8 @@ Tile {
     subtitle: !Network.available ? "nmcli not found" : Network.ssid !== "" ? Network.ssid : !Network.wifiEnabled ? (Network.wired ? "Off · Ethernet" : "Off") : (Network.wired ? "Ethernet" : "Not connected")
     active: Network.wifiEnabled
     onClicked: Network.setWifi(!Network.wifiEnabled)
+    hasDetails: true
+    onDetailsRequested: PillState.ccPage = "wifi"
     onRightClicked: Network.openSettings()
 
     Component.onCompleted: {

@@ -293,6 +293,34 @@ Singleton {
         return command;
     }
 
+    // ---- Home (Windows) key opens the pill -------------------------------------
+    readonly property string superKeyCommand: "qs -c archpill ipc call archpill superKey"
+    // Hyprland and Sway can be set up automatically (a marked line is added to
+    // their config and removed again when you turn it off / uninstall).
+    readonly property bool superKeyAutomatic: de === "hyprland" || de === "sway"
+    readonly property string superKeyLine: de === "hyprland" ? "bindr = SUPER, SUPER_L, exec, " + superKeyCommand : de === "sway" ? "bindsym --release Super_L exec " + superKeyCommand : ""
+    readonly property string superKeyFile: de === "hyprland" ? (Quickshell.env("HOME") + "/.config/hypr/hyprland.conf") : de === "sway" ? (Quickshell.env("HOME") + "/.config/sway/config") : ""
+    property bool superKeyEnabled: false
+
+    function checkSuperKey() {
+        if (superKeyFile !== "")
+            superCheck.running = true;
+    }
+    function setSuperKey(on) {
+        if (!superKeyAutomatic)
+            return;
+        superKeyEnabled = on;
+        const reload = de === "hyprland" ? "hyprctl reload >/dev/null" : "swaymsg reload >/dev/null";
+        const script = on ? "grep -q archpill-superkey \"$1\" || printf '\\n# archpill-superkey (added by ArchPill)\\n%s\\n' \"$2\" >> \"$1\"; " + reload : "sed -i '/archpill-superkey/{N;d;}' \"$1\"; " + reload;
+        Quickshell.execDetached(["sh", "-c", script, "sh", superKeyFile, superKeyLine]);
+    }
+    Process {
+        id: superCheck
+        command: ["grep", "-q", "archpill-superkey", root.superKeyFile]
+        onExited: code => root.superKeyEnabled = code === 0
+    }
+    Component.onCompleted: checkSuperKey()
+
     // True if this desktop can do the action.
     function can(action) {
         return cmd(action).length > 0;

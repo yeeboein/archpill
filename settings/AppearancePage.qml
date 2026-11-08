@@ -395,6 +395,62 @@ Column {
                 onMoved: v => Config.setValue("animation.duration", v)
             }
         }
+        Repeater {
+            model: [
+                { id: "slide", name: "Slide in / out", desc: "The pill slides from the screen edge" },
+                { id: "morph", name: "Shape morphing", desc: "Smooth size and corner changes when the pill expands" },
+                { id: "fade", name: "Fades", desc: "Contents fade when switching views" },
+                { id: "bounce", name: "Bounce", desc: "A little springy overshoot when the pill appears" },
+                { id: "hover", name: "Grow on hover", desc: "The pill gets slightly bigger under the mouse" },
+                { id: "press", name: "Button squish", desc: "Buttons, tiles and switches squish when pressed" },
+                { id: "stagger", name: "Widget cascade", desc: "Control-centre widgets appear one after another" },
+                { id: "pages", name: "Menu slides", desc: "Wi-Fi and Bluetooth menus slide in" },
+                { id: "osdPop", name: "Volume pop", desc: "The volume popup springs in" },
+                { id: "tileGlow", name: "Colour fades", desc: "Tiles and switches fade between on and off" },
+                { id: "artSpin", name: "Spinning album art", desc: "Art turns slowly while music plays (uses a bit more GPU)" },
+                { id: "idlePulse", name: "Breathing bar", desc: "The tiny bar pulses while the pill is hidden (uses a bit more GPU)" }
+            ]
+            delegate: SettingRow {
+                required property var modelData
+                label: modelData.name
+                description: modelData.desc
+                opacity: Config.animDuration > 0 ? 1 : 0.5
+                Toggle {
+                    checked: Config.anim(modelData.id)
+                    onToggled: v => Config.setValue("animation." + modelData.id, v)
+                }
+            }
+        }
+        Item {
+            width: parent.width
+            height: 40
+            Row {
+                anchors.right: parent.right
+                anchors.verticalCenter: parent.verticalCenter
+                spacing: 6
+                SmallButton {
+                    label: "Turn all on"
+                    onClicked: {
+                        for (const k in Config.animDefaults)
+                            Config.setValue("animation." + k, true);
+                    }
+                }
+                SmallButton {
+                    label: "Turn all off"
+                    onClicked: {
+                        for (const k in Config.animDefaults)
+                            Config.setValue("animation." + k, false);
+                    }
+                }
+                SmallButton {
+                    label: "Defaults"
+                    onClicked: {
+                        for (const k in Config.animDefaults)
+                            Config.resetValue("animation." + k);
+                    }
+                }
+            }
+        }
         SettingRow {
             label: "Quick presets"
             controlWidth: 300

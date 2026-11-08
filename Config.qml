@@ -84,6 +84,34 @@ Singleton {
     readonly property string fontFamily: get("font.family", "")
     readonly property int fontSize: get("font.size", 12)
     readonly property int animDuration: Math.max(0, get("animation.duration", 180))
+    // Individual animations (Settings → Appearance → Animations). All of them
+    // are off when animation.duration is 0.
+    readonly property var animDefaults: ({
+            "slide": true,     // pill slides in/out
+            "morph": true,     // pill smoothly changes size and shape
+            "fade": true,      // contents fade when switching
+            "bounce": false,   // little overshoot when the pill appears
+            "hover": true,     // pill grows slightly under the mouse
+            "press": true,     // buttons and tiles squish when pressed
+            "stagger": true,   // control-centre widgets appear one after another
+            "pages": true,     // Wi-Fi / Bluetooth menus slide in
+            "osdPop": true,    // volume popup pops in
+            "tileGlow": true,  // tiles fade between on/off colours
+            "artSpin": false,  // album art slowly spins while music plays
+            "idlePulse": false // the tiny bar gently pulses while hidden
+        })
+    function anim(name) {
+        if (animDuration <= 0)
+            return false;
+        const v = get("animation." + name, animDefaults[name]);
+        return v === true;
+    }
+
+    // System monitor refresh (only while a CPU/GPU/RAM widget is visible).
+    readonly property int statsInterval: Math.max(1000, get("stats.interval", 2000))
+
+    // Home (Windows) key: what it opens ("control", "media" or "pill").
+    readonly property string superAction: get("superKey.action", "control")
 
     // ---- Modules ------------------------------------------------------------
     readonly property string timeFormat: get("clock.timeFormat", "HH:mm")

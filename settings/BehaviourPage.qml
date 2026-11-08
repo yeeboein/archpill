@@ -98,6 +98,59 @@ Column {
     }
 
     Section {
+        title: "Home (Windows) key"
+        note: "Press the Windows / Super key on its own to open the pill."
+        Component.onCompleted: Desktop.checkSuperKey()
+        SettingRow {
+            label: "Home (Windows) key opens the pill"
+            description: Desktop.superKeyAutomatic ? "Sets it up in your " + Desktop.niceName + " config automatically" : "Needs a quick setup in " + Desktop.niceName + " (steps below)"
+            Toggle {
+                visible: Desktop.superKeyAutomatic
+                checked: Desktop.superKeyEnabled
+                onToggled: v => Desktop.setSuperKey(v)
+            }
+        }
+        SettingRow {
+            label: "It opens"
+            controlWidth: 320
+            Choice {
+                options: [{ label: "Control centre", value: "control" }, { label: "Music", value: "media" }, { label: "Show pill", value: "pill" }]
+                current: Config.superAction
+                onPicked: v => Config.setValue("superKey.action", v)
+            }
+        }
+        // Manual steps (KDE and others)
+        Column {
+            visible: !Desktop.superKeyAutomatic
+            width: parent.width
+            spacing: 6
+            topPadding: 6
+            bottomPadding: 6
+            PillText {
+                width: parent.width
+                wrapMode: Text.Wrap
+                maximumLineCount: 8
+                color: Config.subtle
+                sizeFactor: 0.9
+                text: Desktop.isKde ? "1. Open System Settings → Keyboard → Shortcuts.\n2. Find \"Plasma Workspace\" → \"Activate Application Launcher\" and remove Meta from it (keep Alt+F1 if you like).\n3. Click \"Add New\" → \"Command or Script…\", paste the command below, and set the shortcut by pressing the Windows key on its own." : Desktop.isGnome ? "GNOME can't show ArchPill, so this isn't available." : "In your desktop's keyboard settings, bind the Super key (on its own, on release) to the command below."
+            }
+            Row {
+                spacing: 6
+                SmallButton {
+                    label: "Copy command"
+                    highlight: true
+                    onClicked: Quickshell.clipboardText = Desktop.superKeyCommand
+                }
+                SmallButton {
+                    visible: Desktop.isKde
+                    label: "Open Shortcuts settings"
+                    onClicked: Quickshell.execDetached(["systemsettings", "kcm_keys"])
+                }
+            }
+        }
+    }
+
+    Section {
         title: "Showing & hiding"
         SettingRow {
             label: "Always show the pill"

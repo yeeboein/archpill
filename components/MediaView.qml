@@ -68,6 +68,14 @@ Item {
                 Image {
                     id: art
                     anchors.fill: parent
+                    // "Art spin": slowly turns while music plays (off by default).
+                    RotationAnimation on rotation {
+                        running: root.big && Config.anim("artSpin") && !!root.player && root.player.isPlaying && root.visible
+                        loops: Animation.Infinite
+                        from: 0
+                        to: 360
+                        duration: 20000
+                    }
                     source: root.player ? (root.player.trackArtUrl || "") : ""
                     sourceSize: Qt.size(root.artSize * 2, root.artSize * 2)
                     fillMode: Image.PreserveAspectCrop

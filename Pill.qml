@@ -155,6 +155,23 @@ PanelWindow {
         color: Config.foreground
         opacity: (Config.idleMode === "tiny" && !win.open) ? 0.35 : 0
         visible: opacity > 0
+        // "Idle pulse": gently breathes while hidden (off by default: it keeps
+        // the GPU awake a little).
+        SequentialAnimation on scale {
+            running: Config.anim("idlePulse") && Config.idleMode === "tiny" && !win.open
+            loops: Animation.Infinite
+            alwaysRunToEnd: true
+            NumberAnimation {
+                to: 1.25
+                duration: 1200
+                easing.type: Easing.InOutSine
+            }
+            NumberAnimation {
+                to: 1
+                duration: 1200
+                easing.type: Easing.InOutSine
+            }
+        }
         Behavior on opacity {
             NumberAnimation {
                 duration: Config.animDuration
@@ -222,33 +239,45 @@ PanelWindow {
             visible: win.open || Math.abs(x - (win.hiddenX - hitbox.x)) > 1 || Math.abs(y - (win.hiddenY - hitbox.y)) > 1
 
             Behavior on x {
-                enabled: win.onSide
+                enabled: win.onSide && Config.anim("slide")
                 NumberAnimation {
                     duration: Config.animDuration
-                    easing.type: Easing.OutCubic
+                    easing.type: win.open && Config.anim("bounce") ? Easing.OutBack : Easing.OutCubic
                 }
             }
             Behavior on y {
-                enabled: !win.onSide
+                enabled: !win.onSide && Config.anim("slide")
                 NumberAnimation {
                     duration: Config.animDuration
+                    easing.type: win.open && Config.anim("bounce") ? Easing.OutBack : Easing.OutCubic
+                }
+            }
+
+            // "Hover" animation: grows a little under the mouse.
+            scale: Config.anim("hover") && win.hovering && !win.expanded && win.open ? 1.04 : 1
+            transformOrigin: win.atTop ? Item.Top : win.atBottom ? Item.Bottom : win.hAlign === "left" ? Item.Left : Item.Right
+            Behavior on scale {
+                NumberAnimation {
+                    duration: 140
                     easing.type: Easing.OutCubic
                 }
             }
             Behavior on width {
-                enabled: win.open
+                enabled: win.open && Config.anim("morph")
                 NumberAnimation {
                     duration: Config.animDuration
                     easing.type: Easing.OutCubic
                 }
             }
             Behavior on height {
+                enabled: Config.anim("morph")
                 NumberAnimation {
                     duration: Config.animDuration
                     easing.type: Easing.OutCubic
                 }
             }
             Behavior on radius {
+                enabled: Config.anim("morph")
                 NumberAnimation {
                     duration: Config.animDuration
                 }
@@ -270,6 +299,7 @@ PanelWindow {
                 opacity: win.expanded || win.osd ? 0 : 1
                 visible: opacity > 0
                 Behavior on opacity {
+                    enabled: Config.anim("fade")
                     NumberAnimation {
                         duration: Config.animDuration / 2
                     }
@@ -280,9 +310,19 @@ PanelWindow {
             VolumeBar {
                 anchors.centerIn: parent
                 width: pill.width - Config.pillPadding * 2
+                // "OSD pop": springs in from slightly smaller.
+                scale: win.osd || !Config.anim("osdPop") ? 1 : 0.85
+                Behavior on scale {
+                    enabled: Config.anim("osdPop")
+                    NumberAnimation {
+                        duration: Config.animDuration
+                        easing.type: Easing.OutBack
+                    }
+                }
                 opacity: win.osd ? 1 : 0
                 visible: opacity > 0
                 Behavior on opacity {
+                    enabled: Config.anim("fade")
                     NumberAnimation {
                         duration: Config.animDuration / 2
                     }
@@ -309,6 +349,7 @@ PanelWindow {
                     sourceComponent: win.mode === "media" ? mediaView : controlView
                     opacity: win.expanded && pill.height > Config.pillHeight + 20 ? 1 : 0
                     Behavior on opacity {
+                        enabled: Config.anim("fade")
                         NumberAnimation {
                             duration: Config.animDuration / 2
                         }
@@ -325,6 +366,7 @@ PanelWindow {
                 opacity: win.osdStrip ? 1 : 0
                 visible: opacity > 0
                 Behavior on opacity {
+                    enabled: Config.anim("fade")
                     NumberAnimation {
                         duration: Config.animDuration / 2
                     }

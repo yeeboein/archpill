@@ -13,7 +13,58 @@ Item {
     readonly property var list: Config.controlWidgets
     readonly property int gap: 10
 
-    implicitHeight: col.implicitHeight
+    implicitHeight: PillState.ccPage !== "" ? subPage.implicitHeight : col.implicitHeight
+
+    // ---- Wi-Fi / Bluetooth menus (slide in over the main page) -------------
+    Component { id: wifiPageC; W.WifiPage {} }
+    Component { id: btPageC; W.BluetoothPage {} }
+
+    Column {
+        id: subPage
+        width: parent.width
+        spacing: 10
+        visible: PillState.ccPage !== "" || x < width
+        x: PillState.ccPage !== "" ? 0 : width + 20
+        opacity: PillState.ccPage !== "" ? 1 : 0
+        Behavior on x {
+            enabled: Config.anim("pages")
+            NumberAnimation {
+                duration: Config.animDuration
+                easing.type: Easing.OutCubic
+            }
+        }
+        Behavior on opacity {
+            enabled: Config.anim("pages")
+            NumberAnimation {
+                duration: Config.animDuration
+            }
+        }
+
+        Item {
+            width: parent.width
+            height: 30
+            Row {
+                anchors.verticalCenter: parent.verticalCenter
+                spacing: 2
+                IconButton {
+                    icon: "chevron-left"
+                    size: 18
+                    onClicked: PillState.ccPage = ""
+                }
+                PillText {
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: PillState.ccPage === "wifi" ? "Wi-Fi" : PillState.ccPage === "bluetooth" ? "Bluetooth" : ""
+                    font.weight: Font.Bold
+                    sizeFactor: 1.2
+                }
+            }
+        }
+        Loader {
+            width: parent.width
+            active: PillState.ccPage !== ""
+            sourceComponent: PillState.ccPage === "wifi" ? wifiPageC : PillState.ccPage === "bluetooth" ? btPageC : null
+        }
+    }
 
     // id -> widget. Simple buttons (actions, apps, your own buttons)
     // all use ActionTile.
@@ -44,7 +95,10 @@ Item {
             "clipboard": clipboardW,
             "power": powerW,
             "archpillsettings": settingsW,
-            "update": updateW
+            "update": updateW,
+            "cpu": cpuW,
+            "ram": ramW,
+            "gpu": gpuW
         })
 
     function componentFor(id, info) {
@@ -110,12 +164,32 @@ Item {
     Component { id: powerW; W.PowerCard {} }
     Component { id: settingsW; W.SettingsTile {} }
     Component { id: updateW; W.UpdateTile {} }
+    Component { id: cpuW; W.CpuCard {} }
+    Component { id: ramW; W.RamCard {} }
+    Component { id: gpuW; W.GpuCard {} }
     Component { id: actionW; W.ActionTile {} }
 
     Column {
         id: col
         width: parent.width
         spacing: 12
+        // Slides away to the left while a menu is open.
+        visible: PillState.ccPage === "" || x > -width
+        x: PillState.ccPage === "" ? 0 : -width - 20
+        opacity: PillState.ccPage === "" ? 1 : 0
+        Behavior on x {
+            enabled: Config.anim("pages")
+            NumberAnimation {
+                duration: Config.animDuration
+                easing.type: Easing.OutCubic
+            }
+        }
+        Behavior on opacity {
+            enabled: Config.anim("pages")
+            NumberAnimation {
+                duration: Config.animDuration
+            }
+        }
 
         // Header
         Item {
@@ -218,6 +292,35 @@ Item {
                     visible: !!info && (!!info.app || !!info.custom || WidgetRegistry.supported(info))
                     width: !visible ? 0 : wide ? flow.width : (flow.width - root.gap) / 2
                     height: Math.max(loader.item ? loader.item.implicitHeight : 0, PillState.editing ? 50 : 0)
+
+                    // "Stagger" animation: widgets fade and rise in one after another.
+                    opacity: Config.anim("stagger") ? 0 : 1
+                    transform: Translate {
+                        id: rise
+                        y: Config.anim("stagger") ? 10 : 0
+                    }
+                    Component.onCompleted: if (Config.anim("stagger")) appear.start()
+                    SequentialAnimation {
+                        id: appear
+                        PauseAnimation {
+                            duration: Math.min(slot.index, 12) * 25
+                        }
+                        ParallelAnimation {
+                            NumberAnimation {
+                                target: slot
+                                property: "opacity"
+                                to: 1
+                                duration: Config.animDuration
+                            }
+                            NumberAnimation {
+                                target: rise
+                                property: "y"
+                                to: 0
+                                duration: Config.animDuration
+                                easing.type: Easing.OutCubic
+                            }
+                        }
+                    }
 
                     Loader {
                         id: loader

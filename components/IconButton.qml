@@ -13,6 +13,14 @@ Item {
     implicitWidth: size + 10
     implicitHeight: size + 10
     opacity: enabledAction ? 1 : 0.35
+    // "Press" animation
+    scale: mouse.pressed && enabledAction && Config.anim("press") ? 0.85 : 1
+    Behavior on scale {
+        NumberAnimation {
+            duration: 90
+            easing.type: Easing.OutQuad
+        }
+    }
 
     Rectangle {
         anchors.fill: parent

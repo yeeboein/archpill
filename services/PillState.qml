@@ -16,6 +16,10 @@ Singleton {
     property string expanded: ""
     // The monitor it is expanded on ("" = the first one).
     property string screenName: ""
+    // Control centre sub-page: "" (main), "wifi" or "bluetooth".
+    property string ccPage: ""
+    // Wi-Fi network waiting for a password ("" = none).
+    property string wifiPasswordFor: ""
     // Control centre "edit widgets" mode.
     property bool editing: false
     // Do Not Disturb (silences ArchPill notifications once they exist).
@@ -41,10 +45,12 @@ Singleton {
         screenName = screen || "";
         expanded = mode;
         editing = false;
+        ccPage = "";
     }
     function close() {
         expanded = "";
         editing = false;
+        ccPage = "";
     }
     function toggle(mode, screen) {
         if (expanded === mode && (screenName === (screen || "") || !screen))

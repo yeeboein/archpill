@@ -57,6 +57,9 @@ Singleton {
         { id: "calendar", name: "Calendar", icon: "calendar", category: "Info", wide: true, desc: "This month, flip through months." },
         { id: "weather", name: "Weather", icon: "cloud", category: "Info", wide: true, desc: "Current weather from wttr.in (needs internet)." },
         { id: "stats", name: "System Monitor", icon: "chip", category: "Info", wide: true, desc: "CPU, memory and disk use (updates only while open)." },
+        { id: "cpu", name: "CPU", icon: "chip", category: "Info", wide: true, desc: "CPU use with a graph, speed and temperature." },
+        { id: "ram", name: "Memory (RAM)", icon: "chart", category: "Info", wide: true, desc: "RAM and swap use with a graph." },
+        { id: "gpu", name: "GPU", icon: "gamepad", category: "Info", wide: true, desc: "Graphics use with a graph (AMD/NVIDIA usage, Intel clock speed), VRAM, temperature." },
         { id: "sysinfo", name: "System Info", icon: "info", category: "Info", wide: true, desc: "Computer name, kernel, uptime." },
 
         // Tools

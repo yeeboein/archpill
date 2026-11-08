@@ -19,6 +19,8 @@ Row {
         name = String(name).toLowerCase();
         if (name === "separator" || name.indexOf("separator:") === 0)
             return separatorModule;
+        if (name === "cpu" || name === "ram" || name === "gpu" || name === "temp")
+            return statModule;
         switch (name) {
         case "clock":
             return clockModule;
@@ -55,6 +57,8 @@ Row {
                 const id = String(modelData);
                 if ("style" in item)
                     item.style = id.indexOf(":") !== -1 ? id.split(":")[1] : "dot";
+                if ("kind" in item)
+                    item.kind = id;
             }
         }
     }
@@ -98,6 +102,10 @@ Row {
     Component {
         id: weatherModule
         M.WeatherTemp {}
+    }
+    Component {
+        id: statModule
+        M.Stat {}
     }
     Component {
         id: separatorModule

@@ -2,7 +2,9 @@ import QtQuick
 import qs
 
 // A control-centre toggle tile: round icon, title and a small status line.
-// Left click toggles, right click usually opens the matching System Settings page.
+// Left click toggles, right click usually opens the matching System Settings
+// page. Tiles with a menu (hasDetails): the round icon toggles, the rest of
+// the tile opens the menu (shown with a › arrow).
 Rectangle {
     id: root
 
@@ -12,8 +14,18 @@ Rectangle {
     property string title: ""
     property string subtitle: ""
     property bool active: false
+    property bool hasDetails: false
     signal clicked
     signal rightClicked
+    signal detailsRequested
+
+    scale: mouse.pressed && Config.anim("press") ? 0.96 : 1
+    Behavior on scale {
+        NumberAnimation {
+            duration: 90
+            easing.type: Easing.OutQuad
+        }
+    }
 
     implicitHeight: 58
     radius: 18
@@ -27,6 +39,12 @@ Rectangle {
         height: 36
         radius: 18
         color: root.active ? Config.accent : Qt.rgba(Config.foreground.r, Config.foreground.g, Config.foreground.b, 0.14)
+        Behavior on color {
+            enabled: Config.anim("tileGlow")
+            ColorAnimation {
+                duration: 160
+            }
+        }
         Icon {
             anchors.centerIn: parent
             visible: root.imageSource === ""
@@ -49,7 +67,7 @@ Rectangle {
         anchors.left: circle.right
         anchors.leftMargin: 10
         anchors.right: parent.right
-        anchors.rightMargin: 8
+        anchors.rightMargin: root.hasDetails ? 22 : 8
         anchors.verticalCenter: parent.verticalCenter
 
         PillText {
@@ -72,6 +90,23 @@ Rectangle {
         hoverEnabled: true
         acceptedButtons: Qt.LeftButton | Qt.RightButton
         cursorShape: Qt.PointingHandCursor
-        onClicked: m => m.button === Qt.RightButton ? root.rightClicked() : root.clicked()
+        onClicked: m => {
+            if (m.button === Qt.RightButton)
+                root.rightClicked();
+            else if (root.hasDetails && m.x > circle.x + circle.width + 4)
+                root.detailsRequested();
+            else
+                root.clicked();
+        }
+    }
+
+    Icon {
+        visible: root.hasDetails
+        anchors.right: parent.right
+        anchors.rightMargin: 6
+        anchors.verticalCenter: parent.verticalCenter
+        name: "chevron-right"
+        size: 16
+        color: Config.subtle
     }
 }

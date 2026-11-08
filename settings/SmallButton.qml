@@ -13,6 +13,12 @@ Rectangle {
     height: 30
     radius: 15
     opacity: enabled ? 1 : 0.6
+    scale: m.pressed && root.enabled && Config.anim("press") ? 0.95 : 1
+    Behavior on scale {
+        NumberAnimation {
+            duration: 90
+        }
+    }
     color: highlight ? Config.accent : danger ? Qt.rgba(Config.critical.r, Config.critical.g, Config.critical.b, m.containsMouse ? 0.35 : 0.2) : Qt.rgba(Config.foreground.r, Config.foreground.g, Config.foreground.b, m.containsMouse && enabled ? 0.16 : 0.08)
 
     PillText {

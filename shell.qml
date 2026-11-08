@@ -38,6 +38,12 @@ ShellRoot {
         SettingsApp {}
     }
 
+    // Wi-Fi password prompt.
+    LazyLoader {
+        active: PillState.wifiPasswordFor !== ""
+        WifiPassword {}
+    }
+
     // First-run welcome tour.
     LazyLoader {
         active: PillState.welcomeOpen
@@ -88,6 +94,15 @@ ShellRoot {
         }
         function update(): void {
             Updater.update();
+        }
+        // Home (Windows) key: does what "superKey.action" says.
+        function superKey(): void {
+            if (Config.superAction === "media")
+                PillState.toggle("media", "");
+            else if (Config.superAction === "pill")
+                PillState.pinned = !PillState.pinned;
+            else
+                PillState.toggle("control", "");
         }
         // Show the welcome tour again.
         function welcome(): void {

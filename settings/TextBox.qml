@@ -8,8 +8,12 @@ Rectangle {
     property alias text: input.text
     property string placeholder: ""
     property bool monospace: false
+    property alias echoMode: input.echoMode
+    property alias inputFocus: input.focus
     signal accepted(string text)
     signal edited(string text)
+    // Only when Enter is pressed (accepted also fires when you click away).
+    signal submitted(string text)
 
     width: parent ? parent.width : 260
     height: 32
@@ -33,6 +37,8 @@ Rectangle {
         selectByMouse: true
         onEditingFinished: root.accepted(text)
         onTextEdited: root.edited(text)
+        Keys.onReturnPressed: root.submitted(text)
+        Keys.onEnterPressed: root.submitted(text)
     }
     PillText {
         anchors.fill: parent

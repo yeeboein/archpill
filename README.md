@@ -54,6 +54,7 @@ That's it. Everything below is the detailed version.
 - [Using ArchPill](#using-archpill)
 - [Customising](#customising)
 - [Volume popup & Plasma's popup](#volume-popup--plasmas-popup)
+- [Home (Windows) key](#home-windows-key)
 - [Keyboard shortcuts](#keyboard-shortcuts)
 - [All commands](#all-commands)
 - [Troubleshooting](#troubleshooting)
@@ -144,6 +145,15 @@ their own confirmation screen.
 - **ArchPill Settings app**: drag-and-drop layout for the pill and the control
   centre, 12 colour themes, every colour, sizes, corners, transparency, font,
   animation speed, behaviour and more. Changes show instantly.
+- **Wi-Fi and Bluetooth menus**: click the Wi-Fi or Bluetooth tile to see
+  networks / devices and connect, disconnect, pair or forget them right in
+  the control centre (the round icon still just toggles it on/off).
+- **CPU, RAM and GPU** widgets with live graphs (control centre) and small
+  readings for the pill. They only update while visible.
+- **Home (Windows) key opens the pill** (Settings → Behaviour).
+- **Animations you can switch on/off one by one**: slide, morph, fades,
+  bounce, grow on hover, button squish, widget cascade, menu slides, volume
+  pop, colour fades, spinning album art, breathing bar.
 - **Liquid glass look**: see-through glass, black with glass edges, or tinted
   glass, with adjustable shine and edges. It's a lightweight look-alike
   without blur, so it stays fast.
@@ -250,7 +260,9 @@ After installing, press **Restart ArchPill** in the same settings section.
 | Close the music player / control centre | Move the mouse away |
 | Edit the control centre | Pencil button in the control centre |
 | Open settings | App menu → ArchPill Settings, or the palette button in the control centre |
-| Wi-Fi / Bluetooth settings | Right-click their tiles |
+| Wi-Fi / Bluetooth menu | Click the Wi-Fi or Bluetooth tile (the round icon toggles it) |
+| Wi-Fi / Bluetooth system settings | Right-click their tiles |
+| Open the pill with the Windows key | Settings → Behaviour → Home (Windows) key |
 
 ## Customising
 
@@ -306,6 +318,19 @@ kwriteconfig6 --notify --file plasmaparc --group General --key VolumeOsd true
 kwriteconfig6 --notify --file plasmaparc --group General --key MuteOsd true
 ```
 
+## Home (Windows) key
+
+Settings → Behaviour → **Home (Windows) key opens the pill**, and choose what
+it opens (control centre, music, or just show the pill).
+
+- **Hyprland / Sway**: flip the switch; ArchPill adds the key binding to your
+  config (and removes it when you switch it off or uninstall).
+- **KDE Plasma**: Plasma uses the Windows key for its app launcher, so it takes
+  one manual step: System Settings → Keyboard → Shortcuts → *Activate
+  Application Launcher* → remove Meta; then *Add New → Command or Script…* with
+  `qs -c archpill ipc call archpill superKey` and press the Windows key as the
+  shortcut. (The settings page has Copy and Open buttons for this.)
+
 ## Keyboard shortcuts
 
 1. Open **System Settings → Keyboard → Shortcuts**.
@@ -338,6 +363,7 @@ qs -c archpill ipc call archpill close              # close music player / contr
 qs -c archpill ipc call archpill playPause
 qs -c archpill ipc call archpill next
 qs -c archpill ipc call archpill previous
+qs -c archpill ipc call archpill superKey           # what the Home (Windows) key does
 qs -c archpill ipc call archpill checkUpdates
 qs -c archpill ipc call archpill update             # install the latest version
 qs -c archpill ipc call archpill reloadConfig

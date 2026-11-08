@@ -23,5 +23,7 @@ Tile {
     subtitle: !adapter ? "No adapter" : !on ? "Off" : connectedNames.length > 0 ? connectedNames.join(", ") : "On"
     active: on
     onClicked: if (adapter) adapter.enabled = !adapter.enabled
+    hasDetails: true
+    onDetailsRequested: PillState.ccPage = "bluetooth"
     onRightClicked: Desktop.run("btsettings")
 }
