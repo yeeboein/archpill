@@ -22,6 +22,7 @@ pkill -f "quickshell.*-c archpill|qs -c archpill" >/dev/null 2>&1 || true
 if [[ -f "$USER_CONF_DIR/.plasma-volume-osd-off" ]]; then
     say "Turning Plasma's volume popup back on"
     kwriteconfig6 --notify --file plasmaparc --group General --key VolumeOsd true || true
+    kwriteconfig6 --notify --file plasmaparc --group General --key MuteOsd true || true
     rm -f "$USER_CONF_DIR/.plasma-volume-osd-off"
 fi
 

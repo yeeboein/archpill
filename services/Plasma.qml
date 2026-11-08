@@ -14,7 +14,7 @@ Singleton {
     property bool darkMode: false
     property string colorScheme: ""
     property bool caffeine: false
-    // Plasma's own volume popup (plasma-pa "VolumeOsd" setting).
+    // Plasma's own volume popup (plasma-pa "VolumeOsd" + "MuteOsd" settings in plasmaparc).
     property bool plasmaVolumePopup: true
 
     // Turn Plasma's volume popup off/on. ArchPill leaves a marker file so
@@ -22,7 +22,9 @@ Singleton {
     function setPlasmaVolumePopup(on) {
         plasmaVolumePopup = on;
         const marker = Config.configDir + "/.plasma-volume-osd-off";
-        Quickshell.execDetached(["sh", "-c", "kwriteconfig6 --notify --file plasmaparc --group General --key VolumeOsd " + (on ? "true" : "false") + (on ? " && rm -f \"$1\"" : " && mkdir -p \"$(dirname \"$1\")\" && touch \"$1\""), "sh", marker]);
+        const v = on ? "true" : "false";
+        const write = k => "kwriteconfig6 --notify --file plasmaparc --group General --key " + k + " " + v;
+        Quickshell.execDetached(["sh", "-c", write("VolumeOsd") + " && " + write("MuteOsd") + (on ? " && rm -f \"$1\"" : " && mkdir -p \"$(dirname \"$1\")\" && touch \"$1\""), "sh", marker]);
     }
 
     function refresh() {
