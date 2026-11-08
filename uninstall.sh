@@ -28,6 +28,7 @@ fi
 
 say "Removing $AUTOSTART_FILE"
 rm -f "$AUTOSTART_FILE"
+rm -f "${XDG_DATA_HOME:-$HOME/.local/share}/applications/archpill-settings.desktop"
 
 say "Removing $TARGET"
 rm -rf "$TARGET"

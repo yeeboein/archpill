@@ -12,6 +12,8 @@ CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
 TARGET="$CONFIG_HOME/quickshell/archpill"
 USER_CONF_DIR="$CONFIG_HOME/archpill"
 AUTOSTART_FILE="$CONFIG_HOME/autostart/archpill.desktop"
+APPS_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/applications"
+SETTINGS_LAUNCHER="$APPS_DIR/archpill-settings.desktop"
 
 # Packages ArchPill needs (most are already on a Plasma install).
 PACKAGES=(quickshell qt6-svg qt6-declarative upower pipewire wireplumber networkmanager bluez brightnessctl)
@@ -100,7 +102,7 @@ Type=Application
 Name=ArchPill
 Comment=Dynamic Island-style pill for Plasma
 Exec=$QS_BIN -c archpill -n -d
-Icon=preferences-desktop-notification
+Icon=$TARGET/assets/logo.png
 X-KDE-autostart-phase=2
 X-GNOME-Autostart-enabled=true
 NoDisplay=true
@@ -108,6 +110,20 @@ DESKTOP
 else
     rm -f "$AUTOSTART_FILE"
 fi
+
+# ---- 5. "ArchPill Settings" in the app menu ------------------------------------
+say "Adding 'ArchPill Settings' to your app menu"
+mkdir -p "$APPS_DIR"
+cat > "$SETTINGS_LAUNCHER" <<DESKTOP
+[Desktop Entry]
+Type=Application
+Name=ArchPill Settings
+Comment=Customise your ArchPill
+Exec=sh -c '$QS_BIN -c archpill ipc call archpill openSettings || ($QS_BIN -c archpill -n -d; sleep 2; $QS_BIN -c archpill ipc call archpill openSettings)'
+Icon=$TARGET/assets/logo.png
+Categories=Settings;DesktopSettings;
+Keywords=pill;island;quickshell;control centre;
+DESKTOP
 
 echo
 say "Done!"

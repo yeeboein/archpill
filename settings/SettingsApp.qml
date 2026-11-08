@@ -50,12 +50,22 @@ FloatingWindow {
                 spacing: 10
                 leftPadding: 6
                 bottomPadding: 14
+                // ArchPill logo (only used here and as the app icon, never on the pill)
                 Rectangle {
-                    width: 34
-                    height: 16
-                    radius: 8
+                    width: 40
+                    height: 40
+                    radius: 10
                     anchors.verticalCenter: parent.verticalCenter
-                    color: Config.foreground
+                    color: "#ffffff"
+                    Image {
+                        anchors.fill: parent
+                        anchors.margins: 2
+                        source: Qt.resolvedUrl("../assets/logo.png")
+                        sourceSize: Qt.size(80, 80)
+                        fillMode: Image.PreserveAspectFit
+                        smooth: true
+                        mipmap: true
+                    }
                 }
                 PillText {
                     anchors.verticalCenter: parent.verticalCenter
@@ -126,12 +136,18 @@ FloatingWindow {
         anchors.bottom: parent.bottom
         contentHeight: pageLoader.height + 60
         clip: true
-        interactive: false // scroll with the wheel; dragging is for sliders and the layout editor
+        // Mouse wheel, touchpad and dragging all scroll (sliders and the
+        // layout editor keep their own drags).
+        flickableDirection: Flickable.VerticalFlick
         boundsBehavior: Flickable.StopAtBounds
+        maximumFlickVelocity: 4000
 
-        // Wheel scrolling with a sensible speed.
+        // A real mouse wheel scrolls in comfortable steps; touchpads use
+        // Flickable's own smooth scrolling.
         WheelHandler {
+            acceptedDevices: PointerDevice.Mouse
             onWheel: e => {
+                flick.cancelFlick();
                 flick.contentY = Math.max(0, Math.min(flick.contentHeight - flick.height, flick.contentY - e.angleDelta.y));
             }
         }
@@ -159,17 +175,41 @@ FloatingWindow {
         }
     }
 
-    // Thin scroll indicator
-    Rectangle {
+    // Scrollbar (drag it, or click above/below the handle).
+    Item {
+        id: scrollTrack
         visible: flick.contentHeight > flick.height
         anchors.right: parent.right
-        anchors.rightMargin: 3
-        y: flick.height * (flick.contentY / flick.contentHeight)
-        width: 4
-        height: Math.max(30, flick.height * (flick.height / flick.contentHeight))
-        radius: 2
-        color: Config.subtle
-        opacity: 0.5
+        anchors.top: parent.top
+        anchors.bottom: parent.bottom
+        width: 14
+
+        Rectangle {
+            id: scrollHandle
+            anchors.right: parent.right
+            anchors.rightMargin: 3
+            y: (flick.height - height) * (flick.contentY / Math.max(1, flick.contentHeight - flick.height))
+            width: scrollMouse.containsMouse || scrollMouse.pressed ? 8 : 5
+            height: Math.max(40, flick.height * (flick.height / flick.contentHeight))
+            radius: width / 2
+            color: Config.subtle
+            opacity: scrollMouse.pressed ? 0.9 : 0.55
+        }
+        MouseArea {
+            id: scrollMouse
+            anchors.fill: parent
+            hoverEnabled: true
+            preventStealing: true
+            function scrollTo(y) {
+                const frac = Math.max(0, Math.min(1, (y - scrollHandle.height / 2) / (height - scrollHandle.height)));
+                flick.contentY = frac * (flick.contentHeight - flick.height);
+            }
+            onPressed: mouse => scrollTo(mouse.y)
+            onPositionChanged: mouse => {
+                if (pressed)
+                    scrollTo(mouse.y);
+            }
+        }
     }
 
     Component {

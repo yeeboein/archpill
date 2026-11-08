@@ -1,3 +1,5 @@
+<p align="center"><img src="assets/logo.png" width="160" alt="ArchPill logo"></p>
+
 # ArchPill
 
 A small, lightweight Dynamic Island–style pill for **KDE Plasma 6 on Wayland**,
@@ -22,8 +24,8 @@ Move the mouse to the top-centre edge of the screen.
 
 ## Customise it
 
-Open **ArchPill Settings**: click the palette button at the top of the control
-centre, or run `qs -c archpill ipc call archpill openSettings`. In there you can:
+Open **ArchPill Settings**: find it in your app menu, click the palette button
+at the top of the control centre, or run `qs -c archpill ipc call archpill openSettings`. In there you can:
 
 - **Pill**: drag modules into any order, add/remove them (clock, now playing,
   volume, battery, control-centre button, Wi-Fi, Bluetooth, mic, weather,

@@ -21,6 +21,36 @@ Column {
         { cmd: "previous", what: "Previous song" }
     ]
 
+    Row {
+        spacing: 16
+        Rectangle {
+            width: 96
+            height: 96
+            radius: 22
+            color: "#ffffff"
+            Image {
+                anchors.fill: parent
+                anchors.margins: 4
+                source: Qt.resolvedUrl("../assets/logo.png")
+                sourceSize: Qt.size(192, 192)
+                fillMode: Image.PreserveAspectFit
+                mipmap: true
+            }
+        }
+        Column {
+            anchors.verticalCenter: parent.verticalCenter
+            PillText {
+                text: "ArchPill"
+                font.weight: Font.Bold
+                sizeFactor: 2
+            }
+            PillText {
+                text: "Your Dynamic Island for KDE Plasma"
+                color: Config.subtle
+            }
+        }
+    }
+
     Section {
         title: "ArchPill"
         note: "A Dynamic Island-style pill for KDE Plasma, built with Quickshell. Your settings live in " + Config.userPath + " and are saved automatically."
