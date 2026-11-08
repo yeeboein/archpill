@@ -37,7 +37,7 @@ PanelWindow {
     // Big enough for the widest/tallest pill; the transparent part costs
     // almost nothing and is click-through thanks to the mask.
     implicitWidth: Math.max(Config.pillMaxWidth, Config.triggerWidth, Math.max(Config.mediaWidth, Config.controlWidth) + Config.hoverMargin * 2) + 16
-    implicitHeight: Config.topMargin + Math.max(Config.pillHeight, Config.expandedMaxHeight) + Config.hoverMargin + 8
+    implicitHeight: Config.topMargin + Math.max(Config.pillHeight, Config.expandedMaxHeight) + osdStripHeight + Config.hoverMargin + 8
 
     // ---- expanded mode -------------------------------------------------------
     // Which screen an IPC command (no screen given) opens on.
@@ -55,6 +55,10 @@ PanelWindow {
     readonly property bool expanded: mode !== ""
     // Volume popup (shown on the default screen, not while expanded).
     readonly property bool osd: PillState.osd !== "" && isDefaultScreen && !expanded
+    // While the music player is open, volume changes appear in a small strip
+    // that grows out of its bottom edge instead.
+    readonly property bool osdStrip: PillState.osd !== "" && mode === "media"
+    readonly property int osdStripHeight: 44
     readonly property int expandedPad: 16
 
     // ---- reveal logic -------------------------------------------------------
@@ -254,7 +258,7 @@ PanelWindow {
 
             anchors.horizontalCenter: parent.horizontalCenter
             width: win.expanded ? bigWidth : win.osd ? Config.osdWidth : compactWidth
-            height: win.expanded ? Math.max(Config.pillHeight, bigHeight) : Config.pillHeight
+            height: win.expanded ? Math.max(Config.pillHeight, bigHeight) + (win.osdStrip ? win.osdStripHeight : 0) : Config.pillHeight
             radius: win.expanded ? Config.expandedRadius : Math.min(Config.pillRadius, height / 2)
             color: Config.pillColor
             border.width: 1
@@ -324,47 +328,15 @@ PanelWindow {
             }
 
             // Volume popup: icon, bar, percentage.
-            Row {
+            VolumeBar {
                 anchors.centerIn: parent
-                spacing: 10
+                width: pill.width - Config.pillPadding * 2
                 opacity: win.osd ? 1 : 0
                 visible: opacity > 0
                 Behavior on opacity {
                     NumberAnimation {
                         duration: Config.animDuration / 2
                     }
-                }
-                Icon {
-                    anchors.verticalCenter: parent.verticalCenter
-                    size: 18
-                    name: Audio.muted ? "volume-off" : Audio.volume < 0.01 ? "volume-mute" : Audio.volume < 0.5 ? "volume-down" : "volume-up"
-                    color: Audio.muted ? Config.subtle : Config.foreground
-                }
-                Rectangle {
-                    anchors.verticalCenter: parent.verticalCenter
-                    width: pill.width - Config.pillPadding * 2 - 18 - 44 - 20
-                    height: 6
-                    radius: 3
-                    color: Qt.rgba(Config.foreground.r, Config.foreground.g, Config.foreground.b, 0.18)
-                    Rectangle {
-                        height: parent.height
-                        radius: 3
-                        width: parent.width * Math.min(1, Audio.volume / (Math.max(1, Config.maxVolume) / 100))
-                        color: Audio.muted ? Config.subtle : Audio.volume > 1.0 ? Config.warning : Config.foreground
-                        Behavior on width {
-                            NumberAnimation {
-                                duration: 80
-                            }
-                        }
-                    }
-                }
-                PillText {
-                    anchors.verticalCenter: parent.verticalCenter
-                    width: 44
-                    horizontalAlignment: Text.AlignRight
-                    text: Audio.muted ? "Muted" : Audio.percent + "%"
-                    color: Audio.muted ? Config.subtle : Config.foreground
-                    sizeFactor: 0.95
                 }
             }
 
@@ -374,7 +346,7 @@ PanelWindow {
                 x: win.expandedPad
                 y: win.expandedPad
                 width: pill.bigWidth - win.expandedPad * 2
-                height: pill.height - win.expandedPad * 2
+                height: pill.height - win.expandedPad * 2 - (win.osdStrip ? win.osdStripHeight : 0)
                 contentHeight: bigView.item ? bigView.item.implicitHeight : 0
                 interactive: contentHeight > height
                 boundsBehavior: Flickable.StopAtBounds
@@ -392,6 +364,33 @@ PanelWindow {
                             duration: Config.animDuration / 2
                         }
                     }
+                }
+            }
+
+            // Volume strip under the open music player.
+            Item {
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.bottom: parent.bottom
+                height: win.osdStripHeight
+                opacity: win.osdStrip ? 1 : 0
+                visible: opacity > 0
+                Behavior on opacity {
+                    NumberAnimation {
+                        duration: Config.animDuration / 2
+                    }
+                }
+                Rectangle {
+                    x: win.expandedPad
+                    width: parent.width - win.expandedPad * 2
+                    height: 1
+                    color: Qt.rgba(Config.foreground.r, Config.foreground.g, Config.foreground.b, 0.1)
+                }
+                VolumeBar {
+                    x: win.expandedPad
+                    width: parent.width - win.expandedPad * 2
+                    anchors.verticalCenter: parent.verticalCenter
+                    anchors.verticalCenterOffset: -2
                 }
             }
         }
