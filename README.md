@@ -1,69 +1,349 @@
 <p align="center"><img src="assets/logo.png" width="160" alt="ArchPill logo"></p>
 
-# ArchPill
+<h1 align="center">ArchPill</h1>
 
-A small, lightweight Dynamic Island–style pill for **KDE Plasma 6 on Wayland**,
-written in [Quickshell](https://quickshell.org) (QML). It sits at the top-centre
-of the screen, stays out of the way, and slides down when your mouse touches the
-top edge. It runs *alongside* Plasma's own panel — it doesn't replace anything.
+<p align="center">A Dynamic Island–style pill for KDE Plasma 6 on Arch Linux.</p>
 
-> Work in progress. Stage 1 (pill, hover reveal, clock, battery, volume, now
-> playing) is done. A full README with screenshots and shortcut examples comes
-> in stage 5.
+<p align="center"><img src="docs/screenshots/pill.png" alt="The ArchPill pill"></p>
 
-## Install
+---
+
+## The super simple version
+
+**What is it?** A little pill at the top of your screen. It shows the time,
+your music, volume and battery. Click it for a control centre, like on a phone.
+
+**Install it** (copy each line into Konsole, press Enter, wait, do the next):
 
 ```bash
-git clone https://github.com/yeeboein/archpill.git
-cd archpill
+git clone https://github.com/yeeboein/archpill.git ~/archpill
+```
+```bash
+cd ~/archpill
+```
+```bash
 ./install.sh
-qs -c archpill -n -d
 ```
 
-Move the mouse to the top-centre edge of the screen.
+A welcome window pops up and walks you through the rest. 🎉
 
-## Customise it
+**Use it:**
+- Move your mouse to the **top-middle edge** of the screen → the pill appears.
+- Click the **song** → big music player.
+- Click the **sliders icon** → control centre.
+- Want to change things? Open **ArchPill Settings** from your app menu.
 
-Open **ArchPill Settings**: find it in your app menu, click the palette button
-at the top of the control centre, or run `qs -c archpill ipc call archpill openSettings`. In there you can:
-
-- **Pill**: drag modules into any order, add/remove them (clock, now playing,
-  volume, battery, control-centre button, Wi-Fi, Bluetooth, mic, weather,
-  separator) and set their options
-- **Control Centre**: drag widgets into any order, pick from 50+ built-in
-  widgets, add **any installed app** as a tile, or make **your own buttons**
-  (open a website, a folder, or run any command)
-- **Appearance**: 12 themes, every colour, opacity, sizes, corner radius,
-  font, text size, animation speed
-- **Behaviour**: always-on or hover, hover area, delays, what a click does,
-  layer, which screens
-- **Music & More**: preferred player, ignored players, volume step, weather
-  location, dark/light schemes
-- **Shortcuts & Reset**: copy-paste commands for keyboard shortcuts, reset
-
-Everything applies instantly and is saved to `~/.config/archpill/config.json`
-(only the settings you change are stored there).
-
-## Commands
+**Remove it:**
 
 ```bash
-qs -c archpill ipc call archpill toggle      # keep the pill open / let it hide
+~/archpill/uninstall.sh
+```
+
+That's it. Everything below is the detailed version.
+
+---
+
+## Contents
+
+- [Screenshots](#screenshots)
+- [What it can do](#what-it-can-do)
+- [Install (detailed)](#install-detailed)
+- [Update](#update)
+- [Using ArchPill](#using-archpill)
+- [Customising](#customising)
+- [Volume popup & Plasma's popup](#volume-popup--plasmas-popup)
+- [Keyboard shortcuts](#keyboard-shortcuts)
+- [All commands](#all-commands)
+- [Troubleshooting](#troubleshooting)
+- [Uninstall](#uninstall)
+- [Light on weak computers](#light-on-weak-computers)
+- [How it's built](#how-its-built)
+
+## Screenshots
+
+| The pill | Volume popup |
+|---|---|
+| ![pill](docs/screenshots/pill.png) | ![volume](docs/screenshots/volume.png) |
+
+| Music player (click the song) | Control centre |
+|---|---|
+| ![music](docs/screenshots/music.png) | ![control centre](docs/screenshots/control-centre.png) |
+
+| ArchPill Settings | Welcome tour |
+|---|---|
+| ![settings](docs/screenshots/settings.png) | ![welcome](docs/screenshots/welcome.png) |
+
+> These are previews rendered with example data. Want to add real ones from
+> your desktop? Take them with Spectacle and save them in `docs/screenshots/`
+> with the same names.
+
+## What it can do
+
+- **The pill**: hidden until your mouse touches the top edge (or always on,
+  your choice). It never covers your windows or takes screen space when hidden,
+  and runs *alongside* Plasma's own panel.
+- **Pill modules** (pick which and in what order): clock & date, now playing,
+  volume, battery, control-centre button, Wi-Fi, Bluetooth, muted-mic warning,
+  weather, separator.
+- **Music**: prefers Spotify (or whichever player you choose), ignores empty
+  players and the duplicate player Brave/Chrome's *Plasma Integration*
+  extension creates. Click the song for a big player with album art, a progress
+  bar you can click to seek, controls, and a switcher between players.
+- **Volume popup**: change the volume and the pill shows a volume bar, like the
+  Dynamic Island.
+- **Control centre**: 50+ widgets to choose from, including Wi-Fi, Bluetooth,
+  Airplane Mode, Night Light, Dark Mode, Stay Awake, Do Not Disturb, microphone,
+  volume/brightness/mic sliders, sound output picker, per-app volumes, music,
+  battery, clock, calendar, weather, system monitor, system info, timer,
+  clipboard history, power buttons, screenshots, Overview and more. You can
+  also add **any installed app** or **your own buttons** (open a website, a
+  folder, or run a command).
+- **ArchPill Settings app**: drag-and-drop layout for the pill and the control
+  centre, 12 colour themes, every colour, sizes, corners, transparency, font,
+  animation speed, behaviour and more. Changes show instantly.
+- **Welcome tour** on first start.
+- **Keyboard shortcuts** for the control centre, music, settings…
+- **Starts by itself** when you log in.
+
+## Install (detailed)
+
+You need Arch Linux with KDE Plasma 6 on Wayland.
+
+```bash
+git clone https://github.com/yeeboein/archpill.git ~/archpill
+```
+```bash
+cd ~/archpill
+```
+```bash
+./install.sh
+```
+
+What `install.sh` does:
+
+1. Installs the packages it needs with `pacman`: `quickshell`, `qt6-svg`,
+   `qt6-declarative`, `upower`, `pipewire`, `wireplumber`, `networkmanager`,
+   `bluez`, `brightnessctl`. Most are already on a Plasma install. If
+   `quickshell` isn't in your repos it uses `yay` or `paru` (AUR).
+2. Copies ArchPill to `~/.config/quickshell/archpill`.
+3. Creates your settings file `~/.config/archpill/config.json` (if you don't
+   have one yet).
+4. Adds it to Plasma's autostart (`~/.config/autostart/archpill.desktop`).
+5. Adds **ArchPill Settings** to your app menu.
+6. Starts ArchPill. The first time, the welcome tour opens.
+
+Options:
+
+| Command | What it does |
+|---|---|
+| `./install.sh --no-packages` | Skip installing packages (use this for updates) |
+| `./install.sh --no-autostart` | Don't start ArchPill when you log in |
+| `./install.sh --reset-config` | Back up your settings and start fresh |
+| `./install.sh --no-start` | Don't start ArchPill at the end |
+
+## Update
+
+```bash
+cd ~/archpill
+```
+```bash
+git pull
+```
+```bash
+./install.sh --no-packages
+```
+
+Your settings are kept.
+
+## Using ArchPill
+
+| To… | Do this |
+|---|---|
+| Show the pill | Move the mouse to the top-middle edge of the screen |
+| Open the music player | Click the song in the pill |
+| Open the control centre | Click the sliders icon, or an empty part of the pill |
+| Change volume | Scroll over the volume in the pill; click it to mute |
+| Close the music player / control centre | Move the mouse away |
+| Edit the control centre | Pencil button in the control centre |
+| Open settings | App menu → ArchPill Settings, or the palette button in the control centre |
+| Wi-Fi / Bluetooth settings | Right-click their tiles |
+
+## Customising
+
+Open **ArchPill Settings** (app menu, or the palette button in the control
+centre):
+
+| Page | What you can change |
+|---|---|
+| **Pill** | Which modules are in the pill and their order (drag ⠿), clock and date format, music buttons, album art… |
+| **Control Centre** | Widgets and their order, the widget catalogue (search + categories), app tiles, your own buttons |
+| **Appearance** | Themes, every colour, opacity, size, corner radius, padding, font, text size, animation speed |
+| **Behaviour** | Always show or hover, hover area, delays, what a click does, volume popup, layer, screens |
+| **Music & More** | Preferred / ignored music players, volume step, max volume, battery warning, weather location, dark/light schemes, terminal |
+| **Shortcuts & Reset** | Copy-paste shortcut commands, welcome tour, open the settings file, reset everything |
+
+Everything is saved to `~/.config/archpill/config.json`. Only the settings you
+change are stored there; defaults come from `config.default.json`. You can also
+edit the file by hand; ArchPill reloads it as soon as you save.
+
+## Volume popup & Plasma's popup
+
+When the volume changes, the pill shows a volume bar. Plasma also shows its
+own popup, so you'd see two. To only see the pill:
+
+**Easy way:** ArchPill Settings → Behaviour → *Volume popup* → **Turn Plasma's off**
+(the welcome tour offers this too).
+
+**By hand** (copy each line into Konsole):
+
+```bash
+kwriteconfig6 --notify --file plasmaparc --group General --key VolumeOsd false
+```
+```bash
+kwriteconfig6 --notify --file plasmaparc --group General --key MuteOsd false
+```
+
+Check it worked (should print `false`):
+
+```bash
+kreadconfig6 --file plasmaparc --group General --key VolumeOsd
+```
+
+If Plasma's popup still shows, log out and back in once.
+
+**To get Plasma's popup back:** click the same button again, run
+`uninstall.sh`, or:
+
+```bash
+kwriteconfig6 --notify --file plasmaparc --group General --key VolumeOsd true
+```
+```bash
+kwriteconfig6 --notify --file plasmaparc --group General --key MuteOsd true
+```
+
+## Keyboard shortcuts
+
+1. Open **System Settings → Keyboard → Shortcuts**.
+2. Click **Add New → Command or Script…**
+3. Paste one of the commands below and choose a key.
+
+| Shortcut idea | Command |
+|---|---|
+| Meta+C: control centre | `qs -c archpill ipc call archpill toggleControlCenter` |
+| Meta+M: music player | `qs -c archpill ipc call archpill toggleMedia` |
+| Meta+P: keep the pill shown | `qs -c archpill ipc call archpill toggle` |
+| Meta+Comma: ArchPill settings | `qs -c archpill ipc call archpill openSettings` |
+
+(ArchPill Settings → Shortcuts & Reset has **Copy** buttons for these.)
+
+## All commands
+
+```bash
+qs -c archpill -n -d                               # start ArchPill
+qs kill -c archpill                                # stop it
+qs log -c archpill                                 # show its log
 qs -c archpill ipc call archpill toggleControlCenter
 qs -c archpill ipc call archpill toggleMedia
 qs -c archpill ipc call archpill openSettings
+qs -c archpill ipc call archpill welcome            # show the welcome tour
+qs -c archpill ipc call archpill toggle             # keep the pill shown / let it hide
+qs -c archpill ipc call archpill show
+qs -c archpill ipc call archpill hide
+qs -c archpill ipc call archpill close              # close music player / control centre
 qs -c archpill ipc call archpill playPause
 qs -c archpill ipc call archpill next
 qs -c archpill ipc call archpill previous
-qs log -c archpill                           # show ArchPill's log
-qs kill -c archpill                          # stop ArchPill
+qs -c archpill ipc call archpill reloadConfig
+```
+
+## Troubleshooting
+
+**The pill doesn't appear.** Check it's running:
+
+```bash
+qs list
+```
+
+If nothing is listed, start it with the log visible, and look for red lines:
+
+```bash
+qs -c archpill
+```
+
+**It doesn't start when I log in.** Check the autostart entry exists:
+
+```bash
+cat ~/.config/autostart/archpill.desktop
+```
+
+If not, run `./install.sh --no-packages` again. You can also manage it in
+System Settings → Autostart.
+
+**I see two volume popups.** See [Volume popup & Plasma's popup](#volume-popup--plasmas-popup).
+
+**Brightness slider says "not available".** Install `brightnessctl`:
+
+```bash
+sudo pacman -S brightnessctl
+```
+
+**A widget does nothing.** Some widgets use KDE apps (Spectacle, KRunner,
+Emoji picker…). Make sure the app is installed. The log shows any errors:
+
+```bash
+qs log -c archpill
+```
+
+**I broke my settings.** ArchPill Settings → Shortcuts & Reset → *Reset all
+settings*, or:
+
+```bash
+cd ~/archpill && ./install.sh --no-packages --reset-config
 ```
 
 ## Uninstall
 
 ```bash
-./uninstall.sh
+~/archpill/uninstall.sh
 ```
+
+It stops ArchPill, removes its files, the autostart entry and the app-menu
+entry, and turns Plasma's volume popup back on if ArchPill turned it off. It
+asks before deleting your settings. Packages are left installed; remove
+Quickshell with `sudo pacman -Rs quickshell` if you want.
+
+## Light on weak computers
+
+ArchPill is made for low-end laptops (tested against an Intel UHD 600 budget):
+
+- no blur, no shadows, short simple animations (or none: Settings → Appearance → Animation → Off)
+- nothing checks for changes every second: the clock ticks once a minute, Wi-Fi
+  and volume react to events, and things like CPU use or brightness are only
+  read while the control centre is open
+- widgets only load when you add them; the settings app only exists while it's open
+
+## How it's built
+
+ArchPill is written in [Quickshell](https://quickshell.org) (QML).
+
+```
+shell.qml               starts everything, keyboard-shortcut commands
+Pill.qml                the pill window (hover, expand, volume popup)
+ControlCenter.qml       the control centre
+MediaDropdown.qml       the big music player
+Config.qml              loads/saves settings
+config.default.json     default settings
+modules/                things that can go in the pill
+widgets/                control-centre widgets
+services/               music, audio, network, weather, Plasma bridges, state
+components/             shared UI pieces (icons, sliders, tiles…)
+settings/               ArchPill Settings app and the welcome tour
+assets/logo.png         the logo
+install.sh / uninstall.sh
+```
+
+**Coming next:** showing notifications in the pill.
 
 ## License
 
-MIT
+[MIT](LICENSE)

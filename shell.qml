@@ -35,6 +35,18 @@ ShellRoot {
         SettingsApp {}
     }
 
+    // First-run welcome tour.
+    LazyLoader {
+        active: PillState.welcomeOpen
+        WelcomeWizard {}
+    }
+    // Show it shortly after the first start (until you finish or close it).
+    Timer {
+        interval: 1500
+        running: true
+        onTriggered: if (!Config.get("setup.done", false)) PillState.welcomeOpen = true
+    }
+
     // Commands you can run from a terminal or bind to a key, e.g.
     //   qs -c archpill ipc call archpill toggle
     IpcHandler {
@@ -66,6 +78,10 @@ ShellRoot {
         }
         function closeSettings(): void {
             PillState.settingsOpen = false;
+        }
+        // Show the welcome tour again.
+        function welcome(): void {
+            PillState.welcomeOpen = true;
         }
         // Re-read ~/.config/archpill/config.json (normally automatic).
         function reloadConfig(): void {

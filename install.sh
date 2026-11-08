@@ -5,6 +5,7 @@
 #   ./install.sh --no-packages only copy files + autostart (use after editing the code)
 #   ./install.sh --no-autostart  don't start ArchPill automatically at login
 #   ./install.sh --reset-config  back up your config.json and start fresh from the defaults
+#   ./install.sh --no-start      don't start ArchPill at the end
 set -euo pipefail
 
 REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -21,12 +22,14 @@ PACKAGES=(quickshell qt6-svg qt6-declarative upower pipewire wireplumber network
 INSTALL_PACKAGES=1
 AUTOSTART=1
 RESET_CONFIG=0
+START=1
 for arg in "$@"; do
     case "$arg" in
         --no-packages) INSTALL_PACKAGES=0 ;;
         --no-autostart) AUTOSTART=0 ;;
         --reset-config) RESET_CONFIG=1 ;;
-        -h|--help) sed -n '2,8p' "$0"; exit 0 ;;
+        --no-start) START=0 ;;
+        -h|--help) sed -n '2,9p' "$0"; exit 0 ;;
         *) echo "Unknown option: $arg"; exit 1 ;;
     esac
 done
@@ -127,6 +130,13 @@ DESKTOP
 
 echo
 say "Done!"
-echo "Start ArchPill now with:"
-echo "    qs -c archpill -n -d"
-echo "Then move your mouse to the top-centre edge of the screen."
+if [[ $START -eq 1 && -n "${WAYLAND_DISPLAY:-}" ]]; then
+    # Restart so the new files are used. The first time, a welcome tour pops up.
+    "$QS_BIN" kill -c archpill >/dev/null 2>&1 || true
+    sleep 0.5
+    "$QS_BIN" -c archpill -n -d >/dev/null 2>&1 || true
+    echo "ArchPill is running. Move your mouse to the top-centre edge of the screen."
+else
+    echo "Start ArchPill with:"
+    echo "    qs -c archpill -n -d"
+fi

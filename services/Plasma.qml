@@ -21,11 +21,44 @@ Singleton {
     // uninstall.sh knows to turn it back on.
     function setPlasmaVolumePopup(on) {
         plasmaVolumePopup = on;
-        const marker = Config.configDir + "/.plasma-volume-osd-off";
         const v = on ? "true" : "false";
-        const write = k => "kwriteconfig6 --notify --file plasmaparc --group General --key " + k + " " + v;
-        verifyTimer.restart(); // re-read the real value so the button shows what actually happened
-        Quickshell.execDetached(["sh", "-c", write("VolumeOsd") + " && " + write("MuteOsd") + (on ? " && rm -f \"$1\"" : " && mkdir -p \"$(dirname \"$1\")\" && touch \"$1\""), "sh", marker]);
+        const marker = Config.configDir + "/.plasma-volume-osd-off";
+        run([
+            ["kwriteconfig6", "--notify", "--file", "plasmaparc", "--group", "General", "--key", "VolumeOsd", v],
+            ["kwriteconfig6", "--notify", "--file", "plasmaparc", "--group", "General", "--key", "MuteOsd", v],
+            on ? ["rm", "-f", marker] : ["touch", marker]
+        ]);
+    }
+
+    // Runs commands one after another, logs failures, then re-reads the
+    // real settings so buttons always show what actually happened.
+    property var queue: []
+    function run(cmds) {
+        queue = queue.concat(cmds);
+        if (!runner.running)
+            next();
+    }
+    function next() {
+        if (queue.length === 0) {
+            refresh();
+            return;
+        }
+        runner.command = queue[0];
+        queue = queue.slice(1);
+        runner.running = true;
+    }
+    Process {
+        id: runner
+        stderr: StdioCollector {
+            id: runnerErr
+        }
+        onExited: code => {
+            if (code !== 0)
+                console.warn("[archpill] command failed (" + code + "): " + runner.command.join(" ") + " " + runnerErr.text);
+            else
+                console.info("[archpill] ran: " + runner.command.join(" "));
+            root.next();
+        }
     }
 
     function refresh() {
@@ -65,12 +98,6 @@ Singleton {
     Process {
         running: root.caffeine
         command: ["systemd-inhibit", "--what=idle:sleep", "--who=ArchPill", "--why=Stay awake is on", "--mode=block", "sleep", "infinity"]
-    }
-
-    Timer {
-        id: verifyTimer
-        interval: 1200
-        onTriggered: root.refresh()
     }
 
     Component.onCompleted: refresh()

@@ -22,6 +22,8 @@ Singleton {
     property bool dnd: false
     // The settings app window.
     property bool settingsOpen: false
+    // The first-run welcome tour.
+    property bool welcomeOpen: false
 
     // Volume popup: "" or "volume". Shown briefly when the volume changes.
     property string osd: ""

@@ -15,7 +15,9 @@ Flow {
     layoutDirection: Qt.RightToLeft
 
     Repeater {
-        model: root.options
+        // Reversed because the row is laid out right-to-left (to sit on the
+        // right), so the options still read left-to-right in their order.
+        model: root.options.slice().reverse()
         delegate: Rectangle {
             required property var modelData
             readonly property bool selected: root.current === modelData.value

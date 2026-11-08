@@ -2,6 +2,7 @@ import QtQuick
 import Quickshell
 import qs
 import qs.components
+import qs.services
 
 // Shortcuts, config file and reset.
 Column {
@@ -15,6 +16,7 @@ Column {
         { cmd: "toggleControlCenter", what: "Open / close the control centre" },
         { cmd: "toggleMedia", what: "Open / close the music dropdown" },
         { cmd: "openSettings", what: "Open this settings app" },
+        { cmd: "welcome", what: "Show the welcome tour" },
         { cmd: "toggle", what: "Keep the pill shown / let it hide" },
         { cmd: "playPause", what: "Play / pause music" },
         { cmd: "next", what: "Next song" },
@@ -54,6 +56,16 @@ Column {
     Section {
         title: "ArchPill"
         note: "A Dynamic Island-style pill for KDE Plasma, built with Quickshell. Your settings live in " + Config.userPath + " and are saved automatically."
+        SettingRow {
+            label: "Welcome tour"
+            description: "The setup walkthrough from the first start"
+            controlWidth: 220
+            SmallButton {
+                anchors.right: parent.right
+                label: "Show it again"
+                onClicked: PillState.welcomeOpen = true
+            }
+        }
         SettingRow {
             label: "Settings file"
             controlWidth: 300
