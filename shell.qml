@@ -24,6 +24,9 @@ ShellRoot {
         return match.length > 0 ? match : all;
     }
 
+    // Start the update checker (it checks GitHub a minute after login).
+    readonly property bool updateAvailable: Updater.available
+
     Variants {
         model: root.pickScreens(Config.monitor)
         Pill {}
@@ -78,6 +81,13 @@ ShellRoot {
         }
         function closeSettings(): void {
             PillState.settingsOpen = false;
+        }
+        // Check GitHub for updates / install the update.
+        function checkUpdates(): void {
+            Updater.check();
+        }
+        function update(): void {
+            Updater.update();
         }
         // Show the welcome tour again.
         function welcome(): void {

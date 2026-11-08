@@ -103,6 +103,57 @@ Column {
     }
 
     Section {
+        title: "Updates"
+        note: Updater.repo !== "" ? "ArchPill updates from GitHub using your copy in " + Updater.repo + "." : ""
+        SettingRow {
+            label: Updater.status === "checking" ? "Checking…" : Updater.status === "updating" ? "Updating… ArchPill will restart" : Updater.status === "error" ? Updater.error : Updater.status === "norepo" ? "Updates need ArchPill installed with git clone" : Updater.available ? Updater.behind + (Updater.behind === 1 ? " update available" : " updates available") : Updater.lastCheck > 0 ? "You're up to date ✓" : "Not checked yet"
+            description: Updater.available ? "What's new:\n• " + Updater.changes.join("\n• ") : ""
+            controlWidth: 240
+            Row {
+                anchors.right: parent.right
+                spacing: 6
+                SmallButton {
+                    label: "Check now"
+                    enabled: Updater.status !== "checking" && Updater.status !== "updating"
+                    onClicked: Updater.check()
+                }
+                SmallButton {
+                    visible: Updater.available
+                    label: "Update"
+                    highlight: true
+                    enabled: Updater.status !== "updating"
+                    onClicked: Updater.update()
+                }
+            }
+        }
+        SettingRow {
+            label: "Check automatically"
+            description: "A quick check every few hours (needs internet)"
+            Toggle {
+                checked: Config.updateAutoCheck
+                onToggled: v => Config.setValue("updates.autoCheck", v)
+            }
+        }
+        SettingRow {
+            label: "Notify me about updates"
+            Toggle {
+                checked: Config.updateNotify
+                onToggled: v => Config.setValue("updates.notify", v)
+            }
+        }
+        SettingRow {
+            label: "Check every"
+            NumberSlider {
+                from: 1
+                to: 48
+                suffix: " h"
+                value: Config.updateCheckHours
+                onMoved: v => Config.setValue("updates.checkHours", v)
+            }
+        }
+    }
+
+    Section {
         title: "Keyboard shortcuts"
         note: "System Settings → Keyboard → Shortcuts → Add New → Command or Script. Paste a command below and pick a key. \"Copy\" puts it on your clipboard."
         Repeater {

@@ -64,6 +64,108 @@ Column {
     }
 
     Section {
+        title: "Style"
+        note: "Liquid glass is a lightweight look-alike (no blur), so it's still fast on slow laptops."
+        Flow {
+            width: parent.width
+            spacing: 10
+            Repeater {
+                model: [
+                    { mode: "solid", name: "Solid" },
+                    { mode: "glass", name: "Liquid glass" },
+                    { mode: "blackglass", name: "Black + glass edges" },
+                    { mode: "tinted", name: "Tinted glass" }
+                ]
+                delegate: Column {
+                    required property var modelData
+                    spacing: 6
+                    // little desktop-coloured preview with a pill on it
+                    Rectangle {
+                        width: 150
+                        height: 70
+                        radius: 12
+                        border.width: Config.styleMode === modelData.mode ? 2 : 0
+                        border.color: Config.accent
+                        gradient: Gradient {
+                            GradientStop {
+                                position: 0
+                                color: "#5b7bd5"
+                            }
+                            GradientStop {
+                                position: 1
+                                color: "#d68fb4"
+                            }
+                        }
+                        Item {
+                            anchors.centerIn: parent
+                            width: 116
+                            height: 30
+                            GlassBackground {
+                                anchors.fill: parent
+                                radius: height / 2
+                                mode: modelData.mode
+                            }
+                            Text {
+                                anchors.centerIn: parent
+                                text: "12:30  ♪  83%"
+                                color: Config.foreground
+                                font.pixelSize: 11
+                                style: modelData.mode === "glass" || modelData.mode === "tinted" ? Text.Raised : Text.Normal
+                                styleColor: Qt.rgba(0, 0, 0, 0.45)
+                            }
+                        }
+                        MouseArea {
+                            anchors.fill: parent
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: Config.setValue("style.mode", modelData.mode)
+                        }
+                    }
+                    PillText {
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        text: modelData.name
+                        sizeFactor: 0.9
+                        color: Config.styleMode === modelData.mode ? Config.accent : Config.foreground
+                    }
+                }
+            }
+        }
+        SettingRow {
+            visible: Config.styleMode === "glass" || Config.styleMode === "tinted"
+            label: "See-through"
+            description: "Lower = clearer glass. Raise it if text is hard to read."
+            NumberSlider {
+                from: 0
+                to: 90
+                suffix: "%"
+                value: Math.round(Config.glassTint * 100)
+                onMoved: v => Config.setValue("style.glassTint", v / 100)
+            }
+        }
+        SettingRow {
+            visible: Config.styleMode !== "solid"
+            label: "Shine"
+            NumberSlider {
+                from: 0
+                to: 100
+                suffix: "%"
+                value: Math.round(Config.glassShine * 100)
+                onMoved: v => Config.setValue("style.shine", v / 100)
+            }
+        }
+        SettingRow {
+            visible: Config.styleMode !== "solid"
+            label: "Glass edges"
+            NumberSlider {
+                from: 0
+                to: 100
+                suffix: "%"
+                value: Math.round(Config.glassRim * 100)
+                onMoved: v => Config.setValue("style.edges", v / 100)
+            }
+        }
+    }
+
+    Section {
         title: "Colours"
         SettingRow {
             label: "Background"

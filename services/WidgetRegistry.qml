@@ -94,7 +94,8 @@ Singleton {
         { id: "shutdown", name: "Shut Down", icon: "power", category: "Power", action: logoutPrompt("promptShutDown") },
 
         // ArchPill
-        { id: "archpillsettings", name: "ArchPill Settings", icon: "palette", category: "ArchPill", desc: "Open the ArchPill settings app." }
+        { id: "archpillsettings", name: "ArchPill Settings", icon: "palette", category: "ArchPill", desc: "Open the ArchPill settings app." },
+        { id: "update", name: "Update ArchPill", icon: "download", category: "ArchPill", desc: "Check GitHub for a new version and install it." }
     ]
 
     // Look up any widget id, including "app:..." and "custom:...".

@@ -17,7 +17,7 @@ APPS_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/applications"
 SETTINGS_LAUNCHER="$APPS_DIR/archpill-settings.desktop"
 
 # Packages ArchPill needs (most are already on a Plasma install).
-PACKAGES=(quickshell qt6-svg qt6-declarative upower pipewire wireplumber networkmanager bluez brightnessctl)
+PACKAGES=(quickshell qt6-svg qt6-declarative upower pipewire wireplumber networkmanager bluez brightnessctl git libnotify)
 
 INSTALL_PACKAGES=1
 AUTOSTART=1
@@ -78,6 +78,9 @@ find "$TARGET" -mindepth 1 -delete
 tar -C "$REPO_DIR" \
     --exclude=.git --exclude='*.sh' --exclude=README.md --exclude=LICENSE --exclude=docs \
     -cf - . | tar -C "$TARGET" -xf -
+
+# Remember where this copy came from, so the in-app updater can `git pull` it.
+echo "$REPO_DIR" > "$TARGET/.archpill-source"
 
 # ---- 3. user config ------------------------------------------------------------
 mkdir -p "$USER_CONF_DIR"

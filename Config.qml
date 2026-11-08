@@ -72,6 +72,12 @@ Singleton {
     readonly property real opacity: Math.max(0, Math.min(1, get("opacity", 0.94)))
     readonly property color pillColor: Qt.rgba(background.r, background.g, background.b, opacity)
 
+    // Pill style: "solid", "glass", "blackglass" or "tinted" (no blur is used).
+    readonly property string styleMode: get("style.mode", "solid")
+    readonly property real glassTint: Math.max(0, Math.min(1, get("style.glassTint", 0.35)))   // how see-through (lower = clearer)
+    readonly property real glassShine: Math.max(0, Math.min(1, get("style.shine", 0.7)))
+    readonly property real glassRim: Math.max(0, Math.min(1, get("style.edges", 0.8)))
+
     readonly property string fontFamily: get("font.family", "")
     readonly property int fontSize: get("font.size", 12)
     readonly property int animDuration: Math.max(0, get("animation.duration", 180))
@@ -98,6 +104,11 @@ Singleton {
     readonly property var controlWidgets: get("controlCenter.widgets", ["wifi", "bluetooth", "dnd", "mic", "volume", "brightness", "media", "battery"])
     // Your own buttons: [{ "id": "c1", "name": "Reddit", "icon": "web", "command": "xdg-open https://reddit.com" }]
     readonly property var customButtons: get("controlCenter.customButtons", [])
+
+    // Updates from GitHub
+    readonly property bool updateAutoCheck: get("updates.autoCheck", true)
+    readonly property bool updateNotify: get("updates.notify", true)
+    readonly property int updateCheckHours: get("updates.checkHours", 6)
 
     readonly property string weatherLocation: get("weather.location", "")
     readonly property string weatherUnits: get("weather.units", "m") // "m" metric, "u" US

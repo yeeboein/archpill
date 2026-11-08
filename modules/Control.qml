@@ -19,4 +19,15 @@ Item {
         size: 16
         onClicked: PillState.toggle("control", root.screenName)
     }
+    // Little dot when an update is waiting.
+    Rectangle {
+        visible: Updater.available
+        anchors.right: btn.right
+        anchors.top: btn.top
+        anchors.margins: 3
+        width: 7
+        height: 7
+        radius: 4
+        color: Config.accent
+    }
 }

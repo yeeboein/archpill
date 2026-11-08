@@ -11,4 +11,7 @@ Text {
     verticalAlignment: Text.AlignVCenter
     elide: Text.ElideRight
     maximumLineCount: 1
+    // A faint shadow keeps text readable on see-through glass.
+    style: Config.styleMode === "glass" || Config.styleMode === "tinted" ? Text.Raised : Text.Normal
+    styleColor: Qt.rgba(0, 0, 0, 0.45)
 }

@@ -43,7 +43,8 @@ Item {
             "timer": timerW,
             "clipboard": clipboardW,
             "power": powerW,
-            "archpillsettings": settingsW
+            "archpillsettings": settingsW,
+            "update": updateW
         })
 
     function componentFor(id, info) {
@@ -108,6 +109,7 @@ Item {
     Component { id: clipboardW; W.ClipboardCard {} }
     Component { id: powerW; W.PowerCard {} }
     Component { id: settingsW; W.SettingsTile {} }
+    Component { id: updateW; W.UpdateTile {} }
     Component { id: actionW; W.ActionTile {} }
 
     Column {
@@ -142,6 +144,57 @@ Item {
                     icon: PillState.editing ? "check" : "edit"
                     size: 16
                     onClicked: PillState.editing = !PillState.editing
+                }
+            }
+        }
+
+        // Update banner (only when a new version is waiting on GitHub)
+        Rectangle {
+            visible: Updater.available || Updater.status === "updating"
+            width: parent.width
+            height: 46
+            radius: 14
+            color: Qt.rgba(Config.accent.r, Config.accent.g, Config.accent.b, 0.22)
+            border.width: 1
+            border.color: Qt.rgba(Config.accent.r, Config.accent.g, Config.accent.b, 0.5)
+            Icon {
+                id: updIcon
+                x: 12
+                anchors.verticalCenter: parent.verticalCenter
+                name: "download"
+                size: 18
+                color: Config.accent
+            }
+            PillText {
+                anchors.left: updIcon.right
+                anchors.leftMargin: 10
+                anchors.right: updBtn.left
+                anchors.rightMargin: 8
+                anchors.verticalCenter: parent.verticalCenter
+                text: Updater.status === "updating" ? "Updating… ArchPill will restart" : "Update available (" + Updater.behind + ")"
+                font.weight: Font.DemiBold
+            }
+            Rectangle {
+                id: updBtn
+                visible: Updater.status !== "updating"
+                anchors.right: parent.right
+                anchors.rightMargin: 8
+                anchors.verticalCenter: parent.verticalCenter
+                width: updText.implicitWidth + 24
+                height: 30
+                radius: 15
+                color: Config.accent
+                PillText {
+                    id: updText
+                    anchors.centerIn: parent
+                    text: "Update"
+                    color: "#ffffff"
+                    font.weight: Font.DemiBold
+                }
+                MouseArea {
+                    anchors.fill: parent
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: Updater.update()
                 }
             }
         }

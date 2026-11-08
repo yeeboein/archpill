@@ -260,10 +260,14 @@ PanelWindow {
             width: win.expanded ? bigWidth : win.osd ? Config.osdWidth : compactWidth
             height: win.expanded ? Math.max(Config.pillHeight, bigHeight) + (win.osdStrip ? win.osdStripHeight : 0) : Config.pillHeight
             radius: win.expanded ? Config.expandedRadius : Math.min(Config.pillRadius, height / 2)
-            color: Config.pillColor
-            border.width: 1
-            border.color: Qt.rgba(1, 1, 1, 0.06)
+            color: "transparent"
             clip: true
+
+            // Solid or liquid-glass background (Settings → Appearance → Style).
+            GlassBackground {
+                anchors.fill: parent
+                radius: pill.radius
+            }
 
             y: win.open ? Config.topMargin : -height - 2
             // Don't draw anything while fully hidden.

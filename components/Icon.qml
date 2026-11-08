@@ -88,6 +88,7 @@ Image {
             "arrow-up": "M7 14l5-5 5 5z",
             "arrow-down": "M7 10l5 5 5-5z",
             "minus": "M19 13H5v-2h14v2z",
+            "download": "M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z",
             "dot": "M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8z"
         })
 

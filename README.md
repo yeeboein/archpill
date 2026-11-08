@@ -101,6 +101,10 @@ That's it. Everything below is the detailed version.
 - **ArchPill Settings app**: drag-and-drop layout for the pill and the control
   centre, 12 colour themes, every colour, sizes, corners, transparency, font,
   animation speed, behaviour and more. Changes show instantly.
+- **Liquid glass look**: see-through glass, black with glass edges, or tinted
+  glass, with adjustable shine and edges. It's a lightweight look-alike
+  without blur, so it stays fast.
+- **Updates from GitHub** with a notification and a one-click Update button.
 - **Welcome tour** on first start.
 - **Keyboard shortcuts** for the control centre, music, settings…
 - **Starts by itself** when you log in.
@@ -143,6 +147,14 @@ Options:
 
 ## Update
 
+**Easy way:** ArchPill checks GitHub every few hours and sends you a
+notification when there's an update. Open the control centre and press
+**Update** in the blue bar at the top. ArchPill updates and restarts by itself.
+(There's also a dot on the control-centre button when an update is waiting,
+an *Update ArchPill* widget, and Settings → Shortcuts & Reset → *Updates*.)
+
+**By hand:**
+
 ```bash
 cd ~/archpill
 ```
@@ -153,7 +165,8 @@ git pull
 ./install.sh --no-packages
 ```
 
-Your settings are kept.
+Your settings are kept. If an update fails, the details are in
+`~/.cache/archpill-update.log`.
 
 ## Using ArchPill
 
@@ -177,7 +190,7 @@ centre):
 |---|---|
 | **Pill** | Which modules are in the pill and their order (drag ⠿), clock and date format, music buttons, album art… |
 | **Control Centre** | Widgets and their order, the widget catalogue (search + categories), app tiles, your own buttons |
-| **Appearance** | Themes, every colour, opacity, size, corner radius, padding, font, text size, animation speed |
+| **Appearance** | Themes, style (solid / liquid glass / black + glass edges / tinted glass), every colour, opacity, size, corner radius, padding, font, text size, animation speed |
 | **Behaviour** | Always show or hover, hover area, delays, what a click does, volume popup, layer, screens |
 | **Music & More** | Preferred / ignored music players, volume step, max volume, battery warning, weather location, dark/light schemes, terminal |
 | **Shortcuts & Reset** | Copy-paste shortcut commands, welcome tour, open the settings file, reset everything |
@@ -253,6 +266,8 @@ qs -c archpill ipc call archpill close              # close music player / contr
 qs -c archpill ipc call archpill playPause
 qs -c archpill ipc call archpill next
 qs -c archpill ipc call archpill previous
+qs -c archpill ipc call archpill checkUpdates
+qs -c archpill ipc call archpill update             # install the latest version
 qs -c archpill ipc call archpill reloadConfig
 ```
 
@@ -321,6 +336,8 @@ ArchPill is made for low-end laptops (tested against an Intel UHD 600 budget):
   and volume react to events, and things like CPU use or brightness are only
   read while the control centre is open
 - widgets only load when you add them; the settings app only exists while it's open
+- the liquid glass style is made of simple gradients and lines, not blur
+- the update check is one small `git fetch` every few hours
 
 ## How it's built
 
