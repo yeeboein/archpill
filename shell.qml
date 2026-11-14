@@ -28,6 +28,8 @@ ShellRoot {
     readonly property bool updateAvailable: Updater.available
     // Start the notification server (takes over notifications when free).
     readonly property bool notificationsActive: Notifs.active
+    // Start listening for brightness changes.
+    readonly property bool brightnessAvailable: Brightness.available
 
     Variants {
         model: root.pickScreens(Config.monitor)
@@ -105,6 +107,10 @@ ShellRoot {
                 PillState.pinned = !PillState.pinned;
             else
                 PillState.toggle("control", "");
+        }
+        // Show the brightness popup (for brightness key bindings on non-KDE desktops).
+        function showBrightness(): void {
+            Brightness.changedExternally();
         }
         // Show the welcome tour again.
         function welcome(): void {

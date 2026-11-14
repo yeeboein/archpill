@@ -373,13 +373,33 @@ Column {
     }
 
     Section {
-        title: "Volume popup"
-        note: "When the volume changes (keyboard keys, panel, apps), the pill shows a volume bar for a moment."
+        title: "Volume & brightness popup"
+        note: "When the volume or screen brightness changes (keyboard keys, panel, apps), the pill shows a bar for a moment."
         SettingRow {
             label: "Show volume changes in the pill"
             Toggle {
                 checked: Config.osdEnabled
                 onToggled: v => Config.setValue("osd.enabled", v)
+            }
+        }
+        SettingRow {
+            label: "Show brightness changes in the pill"
+            description: Desktop.isKde ? "" : "On " + Desktop.niceName + ", add  qs -c archpill ipc call archpill showBrightness  after brightnessctl in your brightness key bindings"
+            Toggle {
+                checked: Config.osdBrightness
+                onToggled: v => Config.setValue("osd.brightness", v)
+            }
+        }
+        SettingRow {
+            visible: Desktop.isKde
+            label: "Plasma's own brightness popup"
+            description: Plasma.plasmaPopups ? "On - you'll see both. Turning it off also hides Plasma's other little popups (keyboard layout, mic mute)." : "Off - only the pill shows brightness. (uninstall.sh turns it back on.)"
+            controlWidth: 220
+            SmallButton {
+                anchors.right: parent.right
+                label: Plasma.plasmaPopups ? "Turn Plasma's off" : "Turn Plasma's back on"
+                highlight: Plasma.plasmaPopups
+                onClicked: Plasma.setPlasmaPopups(!Plasma.plasmaPopups)
             }
         }
         SettingRow {
@@ -418,11 +438,21 @@ Column {
         }
         SettingRow {
             label: "Try it"
-            controlWidth: 160
-            SmallButton {
+            controlWidth: 200
+            Row {
                 anchors.right: parent.right
-                label: "Show the popup"
-                onClicked: PillState.showOsd("volume")
+                spacing: 6
+                SmallButton {
+                    label: "Volume"
+                    onClicked: PillState.showOsd("volume")
+                }
+                SmallButton {
+                    label: "Brightness"
+                    onClicked: {
+                        Brightness.refresh();
+                        PillState.showOsd("brightness");
+                    }
+                }
             }
         }
     }

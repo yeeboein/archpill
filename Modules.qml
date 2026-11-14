@@ -10,6 +10,7 @@ Singleton {
         { id: "clock", name: "Clock", icon: "timer", desc: "Time and date." },
         { id: "media", name: "Now Playing", icon: "music", desc: "Song and artist. Click for the big music dropdown." },
         { id: "volume", name: "Volume", icon: "volume-up", desc: "Scroll to change, click to mute." },
+        { id: "brightness", name: "Brightness", icon: "sun", desc: "Screen brightness. Scroll to change." },
         { id: "battery", name: "Battery", icon: "bolt", desc: "Charge level (hidden on desktops)." },
         { id: "control", name: "Control Centre Button", icon: "tune", desc: "Opens the control centre." },
         { id: "notifications", name: "Notifications", icon: "bell", desc: "Bell with how many notifications you haven't seen." },

@@ -58,6 +58,7 @@ Singleton {
 
     // ---- Volume popup in the pill ---------------------------------------------
     readonly property bool osdEnabled: get("osd.enabled", true)
+    readonly property bool osdBrightness: get("osd.brightness", true)
     readonly property int osdDuration: get("osd.duration", 1500)
     readonly property int osdWidth: get("osd.width", 280)
 

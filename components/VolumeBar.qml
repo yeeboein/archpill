@@ -2,22 +2,30 @@ import QtQuick
 import qs
 import qs.services
 
-// Speaker icon + volume bar + percentage. Used by the volume popup in the
-// pill and by the strip that appears under the open music player.
+// Icon + level bar + percentage for the popup in the pill (and the strip
+// under the open music player). kind: "volume" or "brightness".
 Item {
     id: root
+    property string kind: "volume"
     // Vertical: icon on top, bar going up, percentage at the bottom.
     property bool vertical: false
     implicitHeight: 22
-    readonly property real level: Math.min(1, Audio.volume / (Math.max(1, Config.maxVolume) / 100))
+
+    readonly property bool isBrightness: kind === "brightness"
+    readonly property real level: isBrightness ? Brightness.value : Math.min(1, Audio.volume / (Math.max(1, Config.maxVolume) / 100))
+    readonly property bool dim: !isBrightness && Audio.muted
+    readonly property string iconName: isBrightness ? "sun" : Audio.muted ? "volume-off" : Audio.volume < 0.01 ? "volume-mute" : Audio.volume < 0.5 ? "volume-down" : "volume-up"
+    readonly property color barColor: dim ? Config.subtle : (!isBrightness && Audio.volume > 1.0) ? Config.warning : Config.foreground
+    readonly property string text: isBrightness ? Brightness.percent + "%" : Audio.muted ? "Muted" : Audio.percent + "%"
+    readonly property string shortText: isBrightness ? String(Brightness.percent) : Audio.muted ? "Off" : String(Audio.percent)
 
     Icon {
         id: icon
         visible: !root.vertical
         anchors.verticalCenter: parent.verticalCenter
         size: 18
-        name: Audio.muted ? "volume-off" : Audio.volume < 0.01 ? "volume-mute" : Audio.volume < 0.5 ? "volume-down" : "volume-up"
-        color: Audio.muted ? Config.subtle : Config.foreground
+        name: root.iconName
+        color: root.dim ? Config.subtle : Config.foreground
     }
     Rectangle {
         visible: !root.vertical
@@ -32,8 +40,8 @@ Item {
         Rectangle {
             height: parent.height
             radius: 3
-            width: parent.width * Math.min(1, Audio.volume / (Math.max(1, Config.maxVolume) / 100))
-            color: Audio.muted ? Config.subtle : Audio.volume > 1.0 ? Config.warning : Config.foreground
+            width: parent.width * root.level
+            color: root.barColor
             Behavior on width {
                 NumberAnimation {
                     duration: 80
@@ -48,8 +56,8 @@ Item {
         anchors.verticalCenter: parent.verticalCenter
         width: 44
         horizontalAlignment: Text.AlignRight
-        text: Audio.muted ? "Muted" : Audio.percent + "%"
-        color: Audio.muted ? Config.subtle : Config.foreground
+        text: root.text
+        color: root.dim ? Config.subtle : Config.foreground
         sizeFactor: 0.95
     }
 
@@ -75,7 +83,7 @@ Item {
                 width: parent.width
                 height: parent.height * root.level
                 radius: 3
-                color: Audio.muted ? Config.subtle : Audio.volume > 1.0 ? Config.warning : Config.foreground
+                color: root.barColor
                 Behavior on height {
                     NumberAnimation {
                         duration: 80
@@ -86,7 +94,7 @@ Item {
         PillText {
             id: vLabel
             anchors.horizontalCenter: parent.horizontalCenter
-            text: Audio.muted ? "Off" : Audio.percent
+            text: root.shortText
             sizeFactor: 0.8
         }
     }

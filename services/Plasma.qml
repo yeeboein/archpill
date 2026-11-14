@@ -18,6 +18,19 @@ Singleton {
     property bool caffeine: false
     // Plasma's own volume popup (plasma-pa "VolumeOsd" + "MuteOsd" settings in plasmaparc).
     property bool plasmaVolumePopup: true
+    // Plasma's on-screen popups in general (plasmarc [OSD] Enabled). Plasma has
+    // no brightness-only switch, so this also hides its keyboard-layout,
+    // mic-mute and similar popups. Plasma reloads it instantly.
+    property bool plasmaPopups: true
+
+    function setPlasmaPopups(on) {
+        plasmaPopups = on;
+        const marker = Config.configDir + "/.plasma-osd-off";
+        run([
+            ["kwriteconfig6", "--notify", "--file", "plasmarc", "--group", "OSD", "--key", "Enabled", on ? "true" : "false"],
+            on ? ["rm", "-f", marker] : ["touch", marker]
+        ]);
+    }
 
     // Night light: KDE and GNOME have their own; elsewhere we run a sunset tool
     // while it's on (hyprsunset, wlsunset or gammastep).
@@ -104,7 +117,7 @@ Singleton {
 
     Process {
         id: reader
-        command: Desktop.isKde ? ["sh", "-c", "kreadconfig6 --file kwinrc --group NightColor --key Active --default false; kreadconfig6 --file kdeglobals --group General --key ColorScheme --default BreezeLight; kreadconfig6 --file plasmaparc --group General --key VolumeOsd --default true"] : ["sh", "-c", "gsettings get org.gnome.settings-daemon.plugins.color night-light-enabled 2>/dev/null || echo unknown; gsettings get org.gnome.desktop.interface color-scheme 2>/dev/null || echo default"]
+        command: Desktop.isKde ? ["sh", "-c", "kreadconfig6 --file kwinrc --group NightColor --key Active --default false; kreadconfig6 --file kdeglobals --group General --key ColorScheme --default BreezeLight; kreadconfig6 --file plasmaparc --group General --key VolumeOsd --default true; kreadconfig6 --file plasmarc --group OSD --key Enabled --default true"] : ["sh", "-c", "gsettings get org.gnome.settings-daemon.plugins.color night-light-enabled 2>/dev/null || echo unknown; gsettings get org.gnome.desktop.interface color-scheme 2>/dev/null || echo default"]
         stdout: StdioCollector {
             onStreamFinished: {
                 const l = text.trim().split("\n");
@@ -113,6 +126,7 @@ Singleton {
                     root.colorScheme = (l[1] || "").trim();
                     root.darkMode = root.colorScheme.toLowerCase().indexOf("dark") !== -1;
                     root.plasmaVolumePopup = (l[2] || "true").trim() !== "false";
+                    root.plasmaPopups = (l[3] || "true").trim() !== "false";
                 } else {
                     if (Desktop.isGnome)
                         root.nightLight = (l[0] || "").trim() === "true";

@@ -50,6 +50,8 @@ Grid {
             return weatherModule;
         case "notifications":
             return bellModule;
+        case "brightness":
+            return brightnessModule;
         }
         Modules.warnUnknown(name);
         return null;
@@ -113,6 +115,10 @@ Grid {
     Component {
         id: weatherModule
         M.WeatherTemp {}
+    }
+    Component {
+        id: brightnessModule
+        M.BrightnessLevel {}
     }
     Component {
         id: bellModule

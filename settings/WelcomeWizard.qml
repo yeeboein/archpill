@@ -229,7 +229,7 @@ FloatingWindow {
         Column {
             spacing: 14
             Title {
-                text: "Volume in the pill"
+                text: "Volume & brightness in the pill"
             }
             Body {
                 text: Desktop.isKde ? "When you change the volume, the pill shows a volume bar for a moment. Plasma also shows its own popup in the middle of the screen, so you'd see two. Turn Plasma's off to only see the pill. (You can turn it back on any time, and uninstalling ArchPill does it for you.)" : "When you change the volume, the pill shows a volume bar for a moment."
@@ -262,6 +262,18 @@ FloatingWindow {
                             label: Plasma.plasmaVolumePopup ? "Turn Plasma's off" : "Turn it back on"
                             highlight: Plasma.plasmaVolumePopup
                             onClicked: Plasma.setPlasmaVolumePopup(!Plasma.plasmaVolumePopup)
+                        }
+                    }
+                    SettingRow {
+                        visible: Desktop.isKde
+                        label: "Plasma's brightness popup"
+                        description: Plasma.plasmaPopups ? "Currently ON (turning it off also hides Plasma's keyboard-layout popup)" : "Currently OFF - the pill shows brightness ✓"
+                        controlWidth: 200
+                        SmallButton {
+                            anchors.right: parent.right
+                            label: Plasma.plasmaPopups ? "Turn Plasma's off" : "Turn it back on"
+                            highlight: Plasma.plasmaPopups
+                            onClicked: Plasma.setPlasmaPopups(!Plasma.plasmaPopups)
                         }
                     }
                     SettingRow {

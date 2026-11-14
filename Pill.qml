@@ -78,7 +78,7 @@ PanelWindow {
     readonly property bool expanded: mode !== ""
     // A notification is showing (the pill grows to show it).
     readonly property bool notif: !!Notifs.current && isDefaultScreen && !expanded
-    // Volume popup (shown on the default screen, not while expanded or showing a notification).
+    // Volume / brightness popup (default screen, not while expanded or showing a notification).
     readonly property bool osd: PillState.osd !== "" && isDefaultScreen && !expanded && !notif
     // While the music player is open, volume changes appear in a small strip
     // that grows out of its bottom edge instead.
@@ -342,6 +342,7 @@ PanelWindow {
             // Volume popup: icon, bar, percentage.
             VolumeBar {
                 anchors.centerIn: parent
+                kind: PillState.lastOsd
                 vertical: win.vertical
                 width: win.vertical ? pill.width - 8 : pill.width - Config.pillPadding * 2
                 height: win.vertical ? pill.height - 24 : implicitHeight
@@ -413,6 +414,7 @@ PanelWindow {
                     color: Qt.rgba(Config.foreground.r, Config.foreground.g, Config.foreground.b, 0.1)
                 }
                 VolumeBar {
+                    kind: PillState.lastOsd
                     x: win.expandedPad
                     width: parent.width - win.expandedPad * 2
                     anchors.verticalCenter: parent.verticalCenter

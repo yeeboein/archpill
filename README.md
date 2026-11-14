@@ -54,6 +54,7 @@ That's it. Everything below is the detailed version.
 - [Using ArchPill](#using-archpill)
 - [Customising](#customising)
 - [Notifications](#notifications)
+- [Brightness popup](#brightness-popup)
 - [Volume popup & Plasma's popup](#volume-popup--plasmas-popup)
 - [Home (Windows) key](#home-windows-key)
 - [Keyboard shortcuts](#keyboard-shortcuts)
@@ -134,8 +135,9 @@ their own confirmation screen.
   players and the duplicate player Brave/Chrome's *Plasma Integration*
   extension creates. Click the song for a big player with album art, a progress
   bar you can click to seek, controls, and a switcher between players.
-- **Volume popup**: change the volume and the pill shows a volume bar, like the
-  Dynamic Island.
+- **Volume & brightness popup**: change the volume or screen brightness and
+  the pill shows a bar, like the Dynamic Island. There's also a brightness
+  module for the pill (scroll to change).
 - **Control centre**: 50+ widgets to choose from, including Wi-Fi, Bluetooth,
   Airplane Mode, Night Light, Dark Mode, Stay Awake, Do Not Disturb, microphone,
   volume/brightness/mic sliders, sound output picker, per-app volumes, music,
@@ -309,6 +311,26 @@ swaync…) and remove it from your autostart; ArchPill takes over by itself.
 If another program keeps the notifications, ArchPill just logs it and carries
 on without them.
 
+## Brightness popup
+
+On KDE, ArchPill notices every brightness change (keys, battery applet…) by
+listening to Plasma's power manager on D-Bus, so there's no polling. To stop
+Plasma showing its own brightness popup too: Settings → Behaviour → *Volume &
+brightness popup* → **Turn Plasma's off**. Plasma has a single switch for its
+little popups, so this also hides its keyboard-layout and mic-mute popups.
+Undo with the same button, `uninstall.sh`, or:
+
+```bash
+kwriteconfig6 --notify --file plasmarc --group OSD --key Enabled true
+```
+
+On Hyprland / Sway etc., add the popup to your brightness keys, e.g. Hyprland:
+
+```
+bind = , XF86MonBrightnessUp, exec, brightnessctl set 5%+ && qs -c archpill ipc call archpill showBrightness
+bind = , XF86MonBrightnessDown, exec, brightnessctl set 5%- && qs -c archpill ipc call archpill showBrightness
+```
+
 ## Volume popup & Plasma's popup
 
 When the volume changes, the pill shows a volume bar. Plasma also shows its
@@ -354,7 +376,8 @@ it opens (control centre, music, or just show the pill).
 - **KDE Plasma**: Plasma uses the Windows key for its app launcher, so it takes
   one manual step: System Settings → Keyboard → Shortcuts → *Activate
   Application Launcher* → remove Meta; then *Add New → Command or Script…* with
-  `qs -c archpill ipc call archpill superKey` and press the Windows key as the
+  `qs -c archpill ipc call archpill showBrightness     # show the brightness popup
+qs -c archpill ipc call archpill superKey` and press the Windows key as the
   shortcut. (The settings page has Copy and Open buttons for this.)
 
 ## Keyboard shortcuts
@@ -389,6 +412,7 @@ qs -c archpill ipc call archpill close              # close music player / contr
 qs -c archpill ipc call archpill playPause
 qs -c archpill ipc call archpill next
 qs -c archpill ipc call archpill previous
+qs -c archpill ipc call archpill showBrightness     # show the brightness popup
 qs -c archpill ipc call archpill superKey           # what the Home (Windows) key does
 qs -c archpill ipc call archpill checkUpdates
 qs -c archpill ipc call archpill update             # install the latest version

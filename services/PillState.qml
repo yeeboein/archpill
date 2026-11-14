@@ -29,10 +29,12 @@ Singleton {
     // The first-run welcome tour.
     property bool welcomeOpen: false
 
-    // Volume popup: "" or "volume". Shown briefly when the volume changes.
+    // Popup: "", "volume" or "brightness". Shown briefly when they change.
     property string osd: ""
+    property string lastOsd: "volume" // keeps the right icon while the popup fades out
     function showOsd(kind) {
         osd = kind;
+        lastOsd = kind;
         osdTimer.restart();
     }
     Timer {

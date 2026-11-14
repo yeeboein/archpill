@@ -39,6 +39,13 @@ if [[ -f "$USER_CONF_DIR/.plasma-notifications-off" ]]; then
     fi
 fi
 
+# Turn Plasma's on-screen popups (brightness etc.) back on if ArchPill turned them off.
+if [[ -f "$USER_CONF_DIR/.plasma-osd-off" ]]; then
+    say "Turning Plasma's brightness and other popups back on"
+    kwriteconfig6 --notify --file plasmarc --group OSD --key Enabled true || true
+    rm -f "$USER_CONF_DIR/.plasma-osd-off"
+fi
+
 say "Removing $AUTOSTART_FILE"
 rm -f "$AUTOSTART_FILE"
 rm -f "${XDG_DATA_HOME:-$HOME/.local/share}/applications/archpill-settings.desktop"
